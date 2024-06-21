@@ -3,6 +3,8 @@ import numpy
 from collections import defaultdict
 from sortedcontainers import SortedSet
 
+import Engine.BasiсShapes
+
 
 class RenderSurface(pygame.Surface):
     def __init__(self, parent_surface=None, render_priority=None, width=None, height=None,
@@ -14,6 +16,8 @@ class RenderSurface(pygame.Surface):
         self.width = width
         self.height = height
         self.transfer_vector = transfer_vector
+        if parent_surface is not None:
+            self.application = parent_surface.application
         self.fill_color = (0, 0, 0, 0)
 
         self.content = []
@@ -55,3 +59,7 @@ class RenderSurface(pygame.Surface):
 
     def set_filling(self, color):
         self.fill_color = color
+
+    def add_border(self, color='red'):
+        Engine.BasiсShapes.Polygon(self, numpy.array(
+            [[0, 0], [self.width - 2, 0], [self.width - 2, self.height - 2], [0, self.height - 2]]), color, 2)
