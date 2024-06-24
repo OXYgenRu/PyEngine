@@ -24,6 +24,7 @@ class Game:
         self.scene = self.start_scene(self.size[0], self.size[1], self)
 
         self.screen.fill((0, 0, 0))
+
         while running:
             tick_length = self.clock.tick(self.fps)
             self.screen.fill((0, 0, 0))
@@ -33,6 +34,7 @@ class Game:
                     running = False
             self.scene.update({"tick_length": tick_length})
             self.scene.render()
+            # self.rscene = pygame.transform.scale(self.scene, (self.size[0] * 2, self.size[1] * 2))
             self.screen.blit(self.scene, (0, 0))
             pygame.display.flip()
         pygame.quit()

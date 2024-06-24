@@ -20,7 +20,6 @@ class MainScene(Engine.GameScene.GameScene):
         self.pl12 = Engine.BasiсShapes.Polygon(self.surf2,
                                                numpy.array([[400, 400], [600, 400], [600, 600], [400, 600]]))
         self.pl12.color = 'blue'
-        # self.surf.set_filling('red')
 
 
 class SecondScene(Engine.GameScene.GameScene):
@@ -28,9 +27,10 @@ class SecondScene(Engine.GameScene.GameScene):
         super().__init__(width=width, height=height, application=application)
         # self.fill_color = 'red'
         self.sr1 = Engine.RenderSurface.RenderSurface(self, 2, 200, 200, numpy.array([100, 100]))
-        self.sr2 = Engine.RenderSurface.RenderSurface(self, 1, 200, 200, numpy.array([400, 100]))
+        self.sr2 = Engine.RenderSurface.RenderSurface(self, 3, 200, 200, numpy.array([150, 100]))
         self.sr1.add_border()
         self.sr2.add_border()
+        # self.sr2.hide()
         self.cr = Engine.BasiсShapes.Circle(self.sr1, numpy.array([[100, 100], [150, 150]]))
         self.tx = Engine.BasiсShapes.Text(self.sr2, numpy.array([100, 100]),
                                           'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', font_id='arial_40',
