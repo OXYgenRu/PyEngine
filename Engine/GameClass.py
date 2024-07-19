@@ -1,19 +1,38 @@
+import inspect
+import os
+import sys
 from collections import defaultdict
 
 import pygame
+import Engine
+import Engine.constants as cs
 
 
 class Game:
-    def __init__(self, window_size, fps, start_scene):
+    def __init__(self, window_size, fps, start_scene_id, init_file):
+        self.game_folder = os.path.dirname(init_file)
         self.clock = None
         self.screen = None
+        self.properties = Engine.PropertyStorage.PropertyStorage()
         self.size = window_size
         self.fps = fps
-        self.start_scene = start_scene
+        self.start_scene_id = start_scene_id
         self.scene = None
         self.scene_storage = defaultdict()
+        self.loaded_scene_storage = defaultdict(None)
         self.font_storage = defaultdict()
         self.fonts_for_registration = []
+        self.init_properties()
+        print(self.game_folder)
+
+    def init_properties(self):
+        self.properties.update(cs.P_SCALING_TYPE, cs.P_SCALING_TYPE_PYGAME)
+
+    def set_property(self, property_name, value):
+        self.properties.update(property_name, value)
+
+    def get_property(self, property_name):
+        return self.properties.get(property_name)
 
     def start(self):
         pygame.init()
@@ -21,10 +40,9 @@ class Game:
         self.clock = pygame.time.Clock()
         running = True
         self.load_fonts()
-        self.scene = self.start_scene(self.size[0], self.size[1], self)
+        self.set_new_scene(self.start_scene_id)
 
         self.screen.fill((0, 0, 0))
-
         while running:
             tick_length = self.clock.tick(self.fps)
             self.screen.fill((0, 0, 0))
@@ -34,7 +52,7 @@ class Game:
                     running = False
             self.scene.update({"tick_length": tick_length})
             self.scene.render()
-            # self.rscene = pygame.transform.scale(self.scene, (self.size[0] * 2, self.size[1] * 2))
+            # self.rscene = pygame.transform.scale(self.scene, (self.size[0] * 0.5, self.size[1] * 0.5))
             self.screen.blit(self.scene, (0, 0))
             pygame.display.flip()
         pygame.quit()
@@ -51,5 +69,24 @@ class Game:
     def register_font(self, font_name, font_size, font_id):
         self.fonts_for_registration.append((font_name, font_size, font_id))
 
-    def set_scene(self, scene_id):
+    def set_new_scene(self, scene_id):
         self.scene = self.scene_storage[scene_id](self.size[0], self.size[1], self)
+        self.loaded_scene_storage[scene_id] = self.scene
+
+    def load_scene(self, scene_id):
+        self.scene = self.loaded_scene_storage[scene_id]
+
+    def load_image(self, name, colorkey=None):
+        fullname = os.path.join(self.game_folder, os.path.join('data', name))
+        if not os.path.isfile(fullname):
+            print(f"Файл с изображением '{fullname}' не найден")
+            sys.exit()
+        image = pygame.image.load(fullname)
+        if colorkey is not None:
+            image = image.convert()
+            if colorkey == -1:
+                colorkey = image.get_at((0, 0))
+            image.set_colorkey(colorkey)
+        else:
+            image = image.convert_alpha()
+        return image

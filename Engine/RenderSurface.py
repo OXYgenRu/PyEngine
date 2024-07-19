@@ -3,8 +3,9 @@ import numpy
 from collections import defaultdict
 from sortedcontainers import SortedSet
 
-import Engine.BasiсShapes
+import Engine.BasiсObjects
 import Engine.PropertyStorage
+import Engine.constants as cs
 
 
 class RenderSurface(pygame.Surface):
@@ -27,6 +28,7 @@ class RenderSurface(pygame.Surface):
         self.surfaces_priorities = SortedSet()
 
         self.properties = Engine.PropertyStorage.PropertyStorage()
+        self.show()
 
         if parent_surface is not None:
             self.application = parent_surface.application
@@ -46,7 +48,7 @@ class RenderSurface(pygame.Surface):
         self.content.append(content_object)
 
     def render(self):
-        if self.properties.get("hided"):
+        if self.properties.get(cs.P_HIDED):
             return
         self.fill(self.fill_color)
         for shape in self.content:
@@ -69,7 +71,7 @@ class RenderSurface(pygame.Surface):
 
     def add_border(self, color='red'):
         self.border_surface = RenderSurface(self, 0, self.width, self.height)
-        self.border_surface.border = Engine.BasiсShapes.Polygon(self.border_surface, numpy.array(
+        self.border_surface.border = Engine.BasiсObjects.Polygon(self.border_surface, numpy.array(
             [[0, 0], [self.width - 2, 0], [self.width - 2, self.height - 2], [0, self.height - 2]]), color, 2)
 
     def hide_border(self):
@@ -79,7 +81,20 @@ class RenderSurface(pygame.Surface):
         self.border_surface.show()
 
     def hide(self):
-        self.properties.update("hided", True)
+        self.properties.update(cs.P_HIDED, True)
 
     def show(self):
-        self.properties.update("hided", False)
+        self.properties.update(cs.P_HIDED, False)
+
+    def update(self, args):
+        if self.properties.get(cs.P_HIDED):
+            return
+        self.on_update(args)
+        for element in self.content:
+            element.update(args)
+        for surface_priority in self.surfaces_priorities:
+            for surface in self.surfaces[surface_priority]:
+                surface.update(args)
+
+    def on_update(self, args):
+        pass

@@ -3,7 +3,7 @@ from collections import defaultdict
 
 class PropertyStorage:
     def __init__(self):
-        self.properties = defaultdict(bool)
+        self.properties = defaultdict(None)
 
     def update(self, property_id, value):
         self.properties[property_id] = value
