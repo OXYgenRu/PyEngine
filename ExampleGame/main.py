@@ -9,6 +9,9 @@ import Engine.RenderSurface
 import Engine.GameClass
 import Engine.GameScene
 import Engine.constants as cs
+import Engine.SpriteSystem.MergedSprites
+import Engine.SpriteSystem.SingleSprites
+from Engine.Animations.Animation import Animation
 
 
 # class CustomSprite(Engine.BasiсObjects.Sprite):
@@ -31,28 +34,31 @@ class MainScene(Engine.GameScene.GameScene):
 class SecondScene(Engine.GameScene.GameScene):
     def __init__(self, width, height, application):
         super().__init__(width=width, height=height, application=application)
-        # self.fill_color = 'red'
-        # self.sr1 = Engine.RenderSurface.RenderSurface(self, 2, 200, 200, np.array([100, 100]))
-        # self.sr2 = Engine.RenderSurface.RenderSurface(self, 3, 200, 200, np.array([150, 100]))
-        # self.sr1.add_border()
-        # self.sr2.add_border()
-        # # self.sr2.hide()
-        # self.cr = Engine.BasiсObjects.Circle(self.sr1, np.array([[100, 100], [150, 150]]))
-        # self.tx = Engine.BasiсObjects.Text(self.sr2, np.array([100, 100]),
-        #                                   'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', font_id='arial_40',
-        self.sp = Engine.BasiсObjects.MergedSpritesGroup(self, self.application.load_image("city.png", None),
-                                                         np.array([None, None]),
-                                                         0.2)
+        self.sp = Engine.SpriteSystem.MergedSprites.MergedSpritesGroup(self,
+                                                                       self.application.load_image("city.png", -1),
+                                                                       np.array([None, None]),
+                                                                       0.2)
         self.fill_color = 'yellow'
         for i in range(6):
-            self.sp1 = Engine.BasiсObjects.Sprite(np.array([i * 100, 100]), self.sp)
+            self.sp1 = Engine.SpriteSystem.MergedSprites.MergedSprite(np.array([i * 200 + 200, 100]), self.sp)
+        self.sp2 = Engine.SpriteSystem.SingleSprites.SingleSpritesGroup(self)
+        sp3_animatipn2 = Animation(self.application.load_image("_Idle.png"), 10, 2, "default")
 
-    def update(self, args):
-        self.sp.resize_image(np.array([None, None]), random.uniform(0.2, 0.3))
+        self.sp3 = Engine.SpriteSystem.SingleSprites.SingleSprite(sp3_animatipn2,
+                                                                  np.array([600, 300]), np.array([None, None]), 4,
+                                                                  self.sp2)
+        sp3_ainmation = Animation(self.application.load_image("_Attack.png"), 4, 12, "second")
+        self.sp3.animator.add_animation(sp3_ainmation)
+
+    def on_update(self, args):
+        if cs.E_EVENT in args:
+            event = args[cs.E_EVENT]
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                self.sp3.animator.load_animation('second', 400)
 
 
 if __name__ == '__main__':
-    game = Engine.GameClass.Game((1366, 765), 10, '1', __file__)
+    game = Engine.GameClass.Game((1366, 765), 100, '1', __file__)
     game.register_scene(SecondScene, '1')
     game.register_scene(MainScene, '2')
     game.register_font('Arial', 40, 'arial_40')

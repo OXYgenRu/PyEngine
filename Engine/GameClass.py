@@ -13,6 +13,7 @@ class Game:
         self.game_folder = os.path.dirname(init_file)
         self.clock = None
         self.screen = None
+        self.custom_event_counter = 0
         self.properties = Engine.PropertyStorage.PropertyStorage()
         self.size = window_size
         self.fps = fps
@@ -23,6 +24,7 @@ class Game:
         self.font_storage = defaultdict()
         self.fonts_for_registration = []
         self.init_properties()
+        self.timers = defaultdict(bool)
         print(self.game_folder)
 
     def init_properties(self):
@@ -48,6 +50,7 @@ class Game:
             self.screen.fill((0, 0, 0))
             self.scene.clear_surface()
             for event in pygame.event.get():
+                self.scene.update({"event": event})
                 if event.type == pygame.QUIT:
                     running = False
             self.scene.update({"tick_length": tick_length})
@@ -90,3 +93,17 @@ class Game:
         else:
             image = image.convert_alpha()
         return image
+
+    def set_timer(self, period):
+        index = 1
+        while index < 1000:
+            if self.timers[index] is False:
+                self.timers[index] = True
+                pygame.time.set_timer(pygame.USEREVENT + index, period)
+                break
+            index += 1
+        return index
+
+    def delete_timer(self, event_id):
+        self.timers[event_id] = False
+        pygame.time.set_timer(pygame.USEREVENT + event_id, 0)
