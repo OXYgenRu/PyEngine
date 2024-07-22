@@ -1,3 +1,4 @@
+import numpy as np
 import pygame
 import numpy
 from collections import defaultdict
@@ -98,3 +99,10 @@ class RenderSurface(pygame.Surface):
 
     def on_update(self, args):
         pass
+
+    def move(self, transfer_vector: np.array):
+        self.transfer_vector += transfer_vector
+
+    def set_point(self, point: np.array):
+        new_vector = point - self.transfer_vector
+        self.move(new_vector)
