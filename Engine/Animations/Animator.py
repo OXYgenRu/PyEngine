@@ -18,6 +18,8 @@ class Animator:
 
         self.default_animation = default_animation
         self.original_frames = []
+        self.frames = []
+        self.adapted_frame = []
         self.current_frame_id = 0
         self.frames_cnt = 0
         self.fps = 0
@@ -45,24 +47,28 @@ class Animator:
 
     def get_frame(self):
         frame = self.original_frames[self.current_frame_id]
+        frame_index = self.current_frame_id
         self.current_frame_id = (self.current_frame_id + 1) % self.frames_cnt
         if self.current_frame_id == 0 and self.playing_cnt >= 1:
             self.playing_cnt -= 1
         if self.playing_cnt == 0:
             self.playing_cnt = -1
             self.load_default_animation()
-        return self.adapt_frame(frame)
+        return self.adapt_frame(frame, frame_index)
         # return scale_image(self.application, frame, self.size, self.scale)
 
-    def adapt_frame(self, frame):
-        frame = scale_image(self.application, frame, self.size, self.scale)
-        frame = pygame.transform.flip(frame, self.symmetrically_x, self.symmetrically_y)
-        frame = pygame.transform.rotate(frame, self.angle)
-        return frame
+    def adapt_frame(self, frame, frame_index):
+        if self.adapted_frame[frame_index] is False:
+            # print(self.scale)
+            frame = scale_image(self.application, frame, self.size, self.scale)
+            frame = pygame.transform.flip(frame, self.symmetrically_x, self.symmetrically_y)
+            frame = pygame.transform.rotate(frame, self.angle)
+            self.adapted_frame[frame_index] = True
+            self.frames[frame_index] = frame
+        return self.frames[frame_index]
 
     def get_current_frame(self):
-        return self.adapt_frame(self.original_frames[self.current_frame_id])
-        # return scale_image(self.application, self.original_frames[self.current_frame_id], self.size, self.scale)
+        return self.adapt_frame(self.original_frames[self.current_frame_id], self.current_frame_id)
 
     def get_active_animation(self) -> Animation:
         return self.animations[self.active_animation_id]
@@ -73,6 +79,7 @@ class Animator:
     def resize(self, size: np.array = np.array([None, None]), scale=None):
         self.scale = scale
         self.size = size
+        self.adapted_frame = [False] * self.frames_cnt
 
     def load_animation(self, animation_id, playing_time=None, playing_cnt=None):
         animation = self.get_animation(animation_id)
@@ -81,6 +88,8 @@ class Animator:
         self.symmetrically_y = False
         self.original_frames = animation.frames
         self.frames_cnt = animation.frames_cnt
+        self.frames = [0] * self.frames_cnt
+        self.adapted_frame = [False] * self.frames_cnt
         self.active_animation_id = animation.animation_id
         self.fps = animation.fps
         self.current_frame_id = 0

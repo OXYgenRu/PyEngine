@@ -44,6 +44,7 @@ class SingleSprite(pygame.sprite.Sprite):
         if cs.E_EVENT in args:
             if pygame.USEREVENT + self.animator.event_number == args[cs.E_EVENT].type:
                 self.image = self.animator.get_frame()
+                self.update_collision()
             if cs.E_START_NEW_ANIMATION == args[cs.E_EVENT].type:
                 self.image = self.animator.get_frame()
                 self.update_collision()

@@ -14,12 +14,16 @@ class RenderSurface(pygame.Surface):
                  transfer_vector: numpy.array = numpy.array([0, 0])):
         super().__init__((width, height), pygame.SRCALPHA)
 
+        self.border = None
         self.parent_surface = parent_surface
         self.render_priority = render_priority
         self.width = width
         self.height = height
         self.border_surface = None
+        self.rendered_surface = pygame.Surface((10, 10), pygame.SRCALPHA)
+        self.rendered_surface.fill((0, 0, 0, 0))
         self.transfer_vector = transfer_vector
+        self.screen_vector = None
 
         self.fill_color = (0, 0, 0, 0)
 
@@ -35,6 +39,7 @@ class RenderSurface(pygame.Surface):
             self.application = parent_surface.application
             parent_surface.surfaces_priorities.add(render_priority)
             parent_surface.surfaces[render_priority].append(self)
+            self.screen_vector = self.transfer_vector + parent_surface.transfer_vector
 
     def set_render_priority(self, new_render_priority):
         if len(self.parent_surface.surfaces[self.render_priority]) == 1:
@@ -60,6 +65,7 @@ class RenderSurface(pygame.Surface):
                 surface.render()
                 surfaces_to_bake_list.append((surface, tuple(surface.transfer_vector)))
         self.blits(surfaces_to_bake_list)
+        self.rendered_surface = self.copy()
 
     def clear_surface(self):
         self.fill(self.fill_color)
@@ -71,8 +77,8 @@ class RenderSurface(pygame.Surface):
         self.fill_color = color
 
     def add_border(self, color='red'):
-        self.border_surface = RenderSurface(self, 0, self.width, self.height)
-        self.border_surface.border = Engine.BasiсObjects.Polygon(self.border_surface, numpy.array(
+
+        self.border = Engine.BasiсObjects.Polygon(self, numpy.array(
             [[0, 0], [self.width - 2, 0], [self.width - 2, self.height - 2], [0, self.height - 2]]), color, 2)
 
     def hide_border(self):
