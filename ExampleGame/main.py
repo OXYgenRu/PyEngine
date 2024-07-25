@@ -36,31 +36,27 @@ class MainScene(Engine.GameScene.GameScene):
 class SecondScene(Engine.GameScene.GameScene):
     def __init__(self, width, height, application):
         super().__init__(width=width, height=height, application=application)
-        self.display = Engine.RenderSurface.RenderSurface(self, 1, 600, 600, np.array([0, 0]))
+        self.display = Engine.RenderSurface.RenderSurface(self, 1, 400, 400, np.array([0, 0]))
         self.display.add_border()
         self.sp = Engine.SpriteSystem.SingleSprites.SingleSpritesGroup(self.display)
         self.an = Animation(self.application.load_image("tree.png", None), 1, 24, "default")
         self.sp1 = Engine.SpriteSystem.SingleSprites.SingleSprite(self.an,
-                                                                  np.array([400, 400]), 0, 3,
+                                                                  np.array([200, 200]), 0, 1.4,
                                                                   self.sp)
         # self.display.fill_color = 'green'
         self.camera1 = Engine.Camera.Camera(self.display, parent_surface=self, render_priority=0, width=500,
                                             height=500,
-                                            transfer_vector=np.array([700, 100]))
+                                            transfer_vector=np.array([600, 200]))
         # self.camera1.camera_setting = numpy.array([0, 0, 1,1])
         self.camera1.camera_setting[2] = 1
         self.camera1.add_border('red')
-        self.bb = Engine.BasiсObjects.Polygon(self.display)
-        self.bb.width = 2
-        self.bb1 = Engine.BasiсObjects.Polygon(self.display, color='green')
-        self.bb1.width = 2
-        self.bb2 = Engine.BasiсObjects.Polygon(self.display, color='yellow')
-        self.bb2.width = 2
+        self.bb = Engine.BasiсObjects.Polygon(self.display, [])
+        self.bb.width = 3
         # self.camera1.fill_color= 'red'
 
     def on_update(self, args):
-        # if "tick_length" in args:
-        # print(1000/args["tick_length"])
+        if "tick_length" in args:
+            print(1000/args["tick_length"])
         if cs.E_EVENT in args:
             event = args[cs.E_EVENT]
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -69,15 +65,9 @@ class SecondScene(Engine.GameScene.GameScene):
                     # print(self.sp1.rect, self.sp1.image)
             self.camera1.camera_motion(event)
             # print(self.camera1.camera_setting[2])
-        self.bb.set_geometry(self.camera1.on_surface_pos_extended[0], self.camera1.on_surface_pos_extended[1],
-                             self.camera1.on_surface_pos_extended[2] - self.camera1.on_surface_pos_extended[0],
-                             self.camera1.on_surface_pos_extended[3] - self.camera1.on_surface_pos_extended[1])
-        self.bb1.set_geometry(self.camera1.on_surface_pos[0], self.camera1.on_surface_pos[1],
-                              self.camera1.on_surface_pos[2] - self.camera1.on_surface_pos[0],
-                              self.camera1.on_surface_pos[3] - self.camera1.on_surface_pos[1])
-        self.bb2.set_geometry(self.camera1.on_surface_rect[0], self.camera1.on_surface_rect[1],
-                              self.camera1.on_surface_rect[4],
-                              self.camera1.on_surface_rect[5])
+        self.bb.set_geometry(self.camera1.on_surface_pos[0], self.camera1.on_surface_pos[1],
+                             self.camera1.on_surface_pos[2] - self.camera1.on_surface_pos[0],
+                             self.camera1.on_surface_pos[3] - self.camera1.on_surface_pos[1])
 
 
 if __name__ == '__main__':
