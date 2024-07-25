@@ -20,7 +20,8 @@ class Shape:
 
 
 class Polygon(Shape):
-    def __init__(self, render_surface, points: numpy.array, color='red', width=0):
+    def __init__(self, render_surface, points: numpy.array = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0]]), color='red',
+                 width=0):
         super().__init__()
         self.render_surface = render_surface
         self.points = points

@@ -17,8 +17,10 @@ class Camera(Engine.RenderSurface.RenderSurface):
         # camera_setting[0] - y_pos
         # camera_setting[0] - zoom
 
-        self.on_surface_rect = None
+        self.on_surface_rect = numpy.array([0, 0, 0, 0, 0, 0])
         self.on_surface_pos = numpy.array([0, 0, 0, 0])
+        self.on_surface_rect_extended = numpy.array([0, 0, 0, 0, 0, 0])
+        self.on_surface_pos_extended = numpy.array([0, 0, 0, 0])
         self.height_ = height
         self.width_ = width
         self.new_y_pos_ = 0
@@ -34,7 +36,16 @@ class Camera(Engine.RenderSurface.RenderSurface):
         self.fill(self.fill_color)
         for shape in self.content:
             shape.render()
-        self.on_surface_pos = numpy.array([0, 0, 0, 0])
+        self.on_surface_pos_extended = numpy.array([0, 0, 0, 0])
+        scale = self.camera_setting[2] * 1.1
+        self.on_surface_pos_extended[0] = self.display_surface.width // 2 - self.width * scale // 2
+        self.on_surface_pos_extended[0] -= self.camera_setting[0]
+        self.on_surface_pos_extended[1] = self.display_surface.height // 2 - self.height * scale // 2
+        self.on_surface_pos_extended[1] -= self.camera_setting[1]
+
+        self.on_surface_pos_extended[2] = self.width * scale + self.on_surface_pos_extended[0]
+        self.on_surface_pos_extended[3] = self.height * scale + self.on_surface_pos_extended[1]
+
         self.on_surface_pos[0] = self.display_surface.width // 2 - self.width * self.camera_setting[2] // 2
         self.on_surface_pos[0] -= self.camera_setting[0]
         self.on_surface_pos[1] = self.display_surface.height // 2 - self.height * self.camera_setting[2] // 2
@@ -42,6 +53,19 @@ class Camera(Engine.RenderSurface.RenderSurface):
 
         self.on_surface_pos[2] = self.width * self.camera_setting[2] + self.on_surface_pos[0]
         self.on_surface_pos[3] = self.height * self.camera_setting[2] + self.on_surface_pos[1]
+
+        self.on_surface_rect_extended = numpy.array([0, 0, 0, 0, 0, 0])
+        self.on_surface_rect_extended[0] = max(0, int(self.on_surface_pos_extended[0]))
+        self.on_surface_rect_extended[0] = min(self.display_surface.width, int(self.on_surface_rect_extended[0]))
+        self.on_surface_rect_extended[1] = max(0, int(self.on_surface_pos_extended[1]))
+        self.on_surface_rect_extended[1] = min(self.display_surface.height, int(self.on_surface_rect_extended[1]))
+        self.on_surface_rect_extended[2] = max(0, int(self.on_surface_pos_extended[2]))
+        self.on_surface_rect_extended[2] = min(self.display_surface.width, int(self.on_surface_rect_extended[2]))
+        self.on_surface_rect_extended[3] = max(0, int(self.on_surface_pos_extended[3]))
+        self.on_surface_rect_extended[3] = min(self.display_surface.height, int(self.on_surface_rect_extended[3]))
+
+        self.on_surface_rect_extended[4] = self.on_surface_rect_extended[2] - self.on_surface_rect_extended[0]
+        self.on_surface_rect_extended[5] = self.on_surface_rect_extended[3] - self.on_surface_rect_extended[1]
 
         self.on_surface_rect = numpy.array([0, 0, 0, 0, 0, 0])
         self.on_surface_rect[0] = max(0, int(self.on_surface_pos[0]))
@@ -56,13 +80,15 @@ class Camera(Engine.RenderSurface.RenderSurface):
         self.on_surface_rect[4] = self.on_surface_rect[2] - self.on_surface_rect[0]
         self.on_surface_rect[5] = self.on_surface_rect[3] - self.on_surface_rect[1]
 
-        img = self.display_surface.rendered_surface.subsurface(self.on_surface_rect[0], self.on_surface_rect[1],
-                                                               self.on_surface_rect[4],
-                                                               self.on_surface_rect[5])
+        img = self.display_surface.rendered_surface.subsurface(self.on_surface_rect_extended[0],
+                                                               self.on_surface_rect_extended[1],
+                                                               self.on_surface_rect_extended[4],
+                                                               self.on_surface_rect_extended[5])
         img = scale_image(self.application, img, np.array([None, None]),
                           1 / self.camera_setting[2])
-        x_pos = (self.on_surface_rect[0] - self.on_surface_pos[0]) / self.camera_setting[2]
-        y_pos = (self.on_surface_rect[1] - self.on_surface_pos[1]) / self.camera_setting[2]
+        x_pos = (self.on_surface_rect_extended[0] - self.on_surface_pos_extended[0]) / scale
+        y_pos = (self.on_surface_rect_extended[1] - self.on_surface_pos_extended[1]) / scale
+        print(x_pos, y_pos)
         self.blit(img, (x_pos, y_pos))
         self.rendered_surface = self.copy()
 
