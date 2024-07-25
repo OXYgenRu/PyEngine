@@ -36,10 +36,10 @@ class MainScene(Engine.GameScene.GameScene):
 class SecondScene(Engine.GameScene.GameScene):
     def __init__(self, width, height, application):
         super().__init__(width=width, height=height, application=application)
-        self.display = Engine.RenderSurface.RenderSurface(self, 1, 400, 400, np.array([0, 0]))
+        self.display = Engine.RenderSurface.RenderSurface(self, 1, 2000, 2000, np.array([-2000, 0]))
         self.display.add_border()
         self.sp = Engine.SpriteSystem.SingleSprites.SingleSpritesGroup(self.display)
-        self.an = Animation(self.application.load_image("tree.png", None), 1, 24, "default")
+        self.an = Animation(self.application.load_image("113096-OOJRXX-811.jpg", None), 1, 24, "default")
         self.sp1 = Engine.SpriteSystem.SingleSprites.SingleSprite(self.an,
                                                                   np.array([200, 200]), 0, 1.4,
                                                                   self.sp)
@@ -50,13 +50,12 @@ class SecondScene(Engine.GameScene.GameScene):
         # self.camera1.camera_setting = numpy.array([0, 0, 1,1])
         self.camera1.camera_setting[2] = 1
         self.camera1.add_border('red')
-        self.bb = Engine.BasiсObjects.Polygon(self.display, [])
-        self.bb.width = 3
+
         # self.camera1.fill_color= 'red'
 
     def on_update(self, args):
-        if "tick_length" in args:
-            print(1000/args["tick_length"])
+        # if "tick_length" in args:
+        #     print(1000/args["tick_length"])
         if cs.E_EVENT in args:
             event = args[cs.E_EVENT]
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -65,9 +64,7 @@ class SecondScene(Engine.GameScene.GameScene):
                     # print(self.sp1.rect, self.sp1.image)
             self.camera1.camera_motion(event)
             # print(self.camera1.camera_setting[2])
-        self.bb.set_geometry(self.camera1.on_surface_pos[0], self.camera1.on_surface_pos[1],
-                             self.camera1.on_surface_pos[2] - self.camera1.on_surface_pos[0],
-                             self.camera1.on_surface_pos[3] - self.camera1.on_surface_pos[1])
+
 
 
 if __name__ == '__main__':
