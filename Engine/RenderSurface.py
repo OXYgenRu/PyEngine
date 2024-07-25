@@ -20,7 +20,7 @@ class RenderSurface(pygame.Surface):
         self.width = width
         self.height = height
         self.border_surface = None
-        self.rendered_surface = pygame.Surface((10, 10), pygame.SRCALPHA)
+        self.rendered_surface = pygame.Surface((width, height), pygame.SRCALPHA)
         self.rendered_surface.fill((0, 0, 0, 0))
         self.transfer_vector = transfer_vector
         self.screen_vector = None

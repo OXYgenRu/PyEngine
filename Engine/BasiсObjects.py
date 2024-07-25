@@ -32,9 +32,8 @@ class Polygon(Shape):
         pygame.draw.polygon(self.render_surface, self.color, self.points.tolist(), self.width)
 
     def set_geometry(self, x1, y1, x2, y2):
-        cnt = 20
         self.points = numpy.array(
-            [[x1 * cnt, y1 * cnt], [x2 * cnt, y1 * cnt], [x2 * cnt, y2 * cnt], [x1 * cnt, y2 * cnt]])
+            [[x1, y1], [x2 + x1, y1], [x2 + x1, y2 + y1], [x1, y2 + y1]])
 
 
 class Circle(Shape):
@@ -66,6 +65,3 @@ class Text(Shape):
     def render(self):
         text_surface = self.render_surface.application.font_storage[self.font_id].render(self.text, True, self.color)
         self.render_surface.blit(text_surface, self.points.tolist())
-
-
-
