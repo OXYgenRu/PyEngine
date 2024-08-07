@@ -28,6 +28,7 @@ class RenderSurface(pygame.Surface):
         self.fill_color = (0, 0, 0, 0)
 
         self.content = []
+        self.updating_content = []
 
         self.surfaces = defaultdict(list)
         self.surfaces_priorities = SortedSet()
@@ -52,6 +53,10 @@ class RenderSurface(pygame.Surface):
 
     def add_content(self, content_object):
         self.content.append(content_object)
+        self.updating_content.append(content_object)
+
+    def add_updating_content(self, content_object):
+        self.updating_content.append(content_object)
 
     def render(self):
         if self.properties.get(cs.P_HIDED):
@@ -97,7 +102,7 @@ class RenderSurface(pygame.Surface):
         if self.properties.get(cs.P_HIDED):
             return
         self.on_update(args)
-        for element in self.content:
+        for element in self.updating_content:
             element.update(args)
         for surface_priority in self.surfaces_priorities:
             for surface in self.surfaces[surface_priority]:

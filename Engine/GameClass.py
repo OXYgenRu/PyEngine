@@ -45,17 +45,23 @@ class Game:
         self.set_new_scene(self.start_scene_id)
 
         self.screen.fill((0, 0, 0))
+
         while running:
             tick_length = self.clock.tick(self.fps)
             self.screen.fill((0, 0, 0))
             self.scene.clear_surface()
+            pressed_buttons = pygame.key.get_pressed()
+            # # buttoms
+            # key_buttons = defaultdict(int)
+            #
+            # # print(pressed_buttons[1025])
+            # self.scene.update({cs.E_PRESSED_BUTTONS: pressed_buttons})
             for event in pygame.event.get():
-                self.scene.update({"event": event})
+                self.scene.update({cs.E_EVENT: event, cs.E_PRESSED_BUTTONS: pressed_buttons})
                 if event.type == pygame.QUIT:
                     running = False
-            self.scene.update({"tick_length": tick_length})
+            self.scene.update({cs.E_TICK_LENGTH: tick_length})
             self.scene.render()
-            # self.rscene = pygame.transform.scale(self.scene, (self.size[0] * 0.5, self.size[1] * 0.5))
             self.screen.blit(self.scene, (0, 0))
             pygame.display.flip()
         pygame.quit()

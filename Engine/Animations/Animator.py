@@ -6,6 +6,7 @@ from Engine.Animations.Animation import Animation
 import numpy as np
 from Engine.tools import scale_image
 import Engine.constants as cs
+import Engine.StateMachine.StateMachine
 
 
 class Animator:
@@ -26,11 +27,13 @@ class Animator:
         self.size = size
         self.scale = scale
         self.event_number = -1
-        self.stop_animation_event = 0
+        self.stop_animation_event = -1
         self.playing_cnt = -1
         self.angle = 0
+        self.end_of_animation = False
         self.symmetrically_x = False
         self.symmetrically_y = False
+        self.connected_state_machine = None
 
         self.load_animation(self.active_animation_id)
 
@@ -46,22 +49,22 @@ class Animator:
             return Animation(default_animation, 1, 1, "default")
 
     def get_frame(self):
+        if self.end_of_animation:
+            self.animation_finished(cs.A_STOP_TIMER_EVENT)
         frame = self.original_frames[self.current_frame_id]
         frame_index = self.current_frame_id
-        self.current_frame_id = (self.current_frame_id + 1) % self.frames_cnt
-        if self.current_frame_id == 0 and self.playing_cnt >= 1:
+        if self.current_frame_id == self.frames_cnt - 1 and self.playing_cnt >= 1:
             self.playing_cnt -= 1
         if self.playing_cnt == 0:
             self.playing_cnt = -1
-            self.load_default_animation()
+            self.end_of_animation = True
+        self.current_frame_id = (self.current_frame_id + 1) % self.frames_cnt
         return self.adapt_frame(frame, frame_index)
-        # return scale_image(self.application, frame, self.size, self.scale)
 
     def adapt_frame(self, frame, frame_index):
         if self.adapted_frame[frame_index] is False:
-            # print(self.scale)
             frame = scale_image(self.application, frame, self.size, self.scale)
-            frame = pygame.transform.flip(frame, self.symmetrically_x, self.symmetrically_y)
+            frame = pygame.transform.flip(frame, self.symmetrically_y, self.symmetrically_x)
             frame = pygame.transform.rotate(frame, self.angle)
             self.adapted_frame[frame_index] = True
             self.frames[frame_index] = frame
@@ -81,14 +84,21 @@ class Animator:
         self.size = size
         self.adapted_frame = [False] * self.frames_cnt
 
+    def set_setting(self, symmetrically_x=False, symmetrically_y=False):
+        self.symmetrically_x = symmetrically_x
+        self.symmetrically_y = symmetrically_y
+        self.adapted_frame = [False] * self.frames_cnt
+
     def load_animation(self, animation_id, playing_time=None, playing_cnt=None):
         animation = self.get_animation(animation_id)
         self.angle = 0
         self.symmetrically_x = False
         self.symmetrically_y = False
+        self.stop_animation_event = -1
         self.original_frames = animation.frames
         self.frames_cnt = animation.frames_cnt
         self.frames = [0] * self.frames_cnt
+        self.end_of_animation = False
         self.adapted_frame = [False] * self.frames_cnt
         self.active_animation_id = animation.animation_id
         self.fps = animation.fps
@@ -113,4 +123,14 @@ class Animator:
         if cs.E_EVENT in args:
             if args[cs.E_EVENT].type == pygame.USEREVENT + self.stop_animation_event:
                 self.application.delete_timer(self.stop_animation_event)
-                self.load_default_animation()
+                self.animation_finished(cs.A_STOP_TIMER_EVENT)
+
+    def animation_finished(self, cause):
+        self.load_default_animation()
+        if self.connected_state_machine is not None:
+            self.connected_state_machine.animation_finished({cs.A_ANIMATION_FINISHED_CAUSE: cause})
+
+    def connect_state_machine(self, state_machine):
+        self.connected_state_machine = state_machine
+        self.animations[self.default_animation.animation_id] = self.init_default_animation(None)
+        self.load_default_animation()
