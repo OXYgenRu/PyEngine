@@ -61,7 +61,6 @@ class RenderSurface(pygame.Surface):
     def render(self):
         if self.properties.get(cs.P_HIDED):
             return
-        self.fill(self.fill_color)
         for shape in self.content:
             shape.render()
         surfaces_to_bake_list = []
@@ -70,7 +69,6 @@ class RenderSurface(pygame.Surface):
                 surface.render()
                 surfaces_to_bake_list.append((surface, tuple(surface.transfer_vector)))
         self.blits(surfaces_to_bake_list)
-        self.rendered_surface = self.copy()
 
     def clear_surface(self):
         self.fill(self.fill_color)

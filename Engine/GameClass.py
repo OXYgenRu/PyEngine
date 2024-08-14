@@ -13,7 +13,7 @@ class Game:
         self.game_folder = os.path.dirname(init_file)
         self.clock = None
         self.screen = None
-        self.custom_event_counter = 0
+        self.custom_event_limit = 1000
         self.properties = Engine.PropertyStorage.PropertyStorage()
         self.size = window_size
         self.fps = fps
@@ -102,7 +102,7 @@ class Game:
 
     def set_timer(self, period):
         index = 1
-        while index < 1000:
+        while index < self.custom_event_limit:
             if self.timers[index] is False:
                 self.timers[index] = True
                 pygame.time.set_timer(pygame.USEREVENT + index, period)

@@ -16,6 +16,7 @@ import Engine.Camera
 from Engine.Animations.Animation import Animation
 import Engine.StateMachine.StateMachine
 from Engine.StateMachine.State import State
+import Engine.CameraV2
 
 
 class DefaultRight(State):
@@ -90,14 +91,7 @@ class AttackRightState(State):
         self.state_machine.load_state("default_right")
 
     def on_update(self, args):
-        if cs.E_EVENT in args:
-            event = args[cs.E_EVENT]
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    self.run = -1
-
-                if event.key == pygame.K_d:
-                    self.run = 1
+        pass
 
 
 class AttackLeftState(State):
@@ -114,14 +108,7 @@ class AttackLeftState(State):
         self.state_machine.load_state("default_left")
 
     def on_update(self, args):
-        if cs.E_EVENT in args:
-            event = args[cs.E_EVENT]
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    self.run = -1
-
-                if event.key == pygame.K_d:
-                    self.run = 1
+        pass
 
 
 class RunRightState(State):
@@ -189,20 +176,29 @@ class MainScene(Engine.GameScene.GameScene):
 class SecondScene(Engine.GameScene.GameScene):
     def __init__(self, width, height, application):
         super().__init__(width=width, height=height, application=application)
-        self.display = Engine.RenderSurface.RenderSurface(self, 1, self.width, self.height, np.array([-2000, 0]))
+        self.display = Engine.CameraV2.Camera(parent_surface=self, render_priority=0, width=self.width // 2,
+                                              height=self.height,
+                                              transfer_vector=np.array([0, 0]), zoom_restrictions=np.array([2, 0.1]))
+        # self.display = Engine.RenderSurface.RenderSurface(self, 1, self.width, self.height, np.array([-20000, -5000]))
         # self.display.add_border()
-
+        self.rect = Engine.BasiсObjects.Polygon(self.display, [], 'green', width=10)
+        self.rect.set_geometry(0, 100, 100, 100)
+        # self.display.test = 1
+        self.display.set_filling('yellow')
         self.state_machine = Engine.StateMachine.StateMachine.StateMachine(self)
         self.player = Engine.RenderSurface.RenderSurface(self.display, 10, 200, 200,
                                                          [self.width // 2 - 100, self.height // 2 - 100])
+        self.player.add_border("green")
+        self.player.set_filling('red')
         self.sp = Engine.SpriteSystem.SingleSprites.SingleSpritesGroup(self.player)
+
         self.an = Animation(self.application.load_image("_Idle.png", None), 10, 4, "default1")
         self.an2 = Animation(self.application.load_image("_Attack.png"), 4, 12, "attack")
         self.an4 = Animation(self.application.load_image("_AttackComboNoMovement.png"), 10, 12, "d")
         self.an3 = Animation(self.application.load_image("_Run.png"), 10, 12, "run_right")
         self.sp1 = Engine.SpriteSystem.SingleSprites.SingleSprite(None,
                                                                   np.array([200 // 2, 200 // 2]),
-                                                                  np.array([None, None]), 2,
+                                                                  np.array([None, None]), 1,
                                                                   self.sp)
 
         self.sp1.animator.add_animation(self.an2)
@@ -218,10 +214,17 @@ class SecondScene(Engine.GameScene.GameScene):
         self.state_machine.add_state(DefaultLeft("default_left"))
         self.state_machine.load_state("default_right")
         self.display.add_border()
+
+        self.display2 = Engine.CameraV2.Camera(parent_surface=self, render_priority=0, width=self.width // 2,
+                                               height=self.height,
+                                               transfer_vector=np.array([self.width // 2, 0]),
+                                               zoom_restrictions=np.array([20, 0.01]))
+        self.display2.set_filling('green')
+        self.rect1 = Engine.BasiсObjects.Polygon(self.display2, color='yellow', width=3)
+        self.rect1.set_geometry(200, 200, 10, 500)
+        self.circle = Engine.BasiсObjects.Circle(self.display2, [[600, 600], [800, 600]], width=10)
         # self.display.fill_color = 'green'
-        self.camera1 = Engine.Camera.Camera(self.display, parent_surface=self, render_priority=0, width=self.width,
-                                            height=self.height,
-                                            transfer_vector=np.array([0, 0]), zoom_restrictions=np.array([2, 0.1]))
+
         # self.camera1.camera_setting = numpy.array([0, 0, 1,1])
         # self.rect = Engine.BasiсObjects.Polygon(self.display, [], color='green')
         # self.rect.set_geometry(0, self.height // 2 + self.sp1.rect.y // 4, self.width, self.height)
@@ -232,9 +235,10 @@ class SecondScene(Engine.GameScene.GameScene):
 
     def on_update(self, args):
         # print(pygame.key.get_pressed())aw
-        # if "tick_length" in args:
-        #     print(1000 / args["tick_length"])
-        pass
+        if "tick_length" in args:
+            print(1000 / args["tick_length"])
+        # pass
+        # print(self.display.camera_setting, self.display2.camera_setting)
         # if cs.E_EVENT in args:
         #     event = args[cs.E_EVENT]
         #     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -243,6 +247,18 @@ class SecondScene(Engine.GameScene.GameScene):
         #     #         # print(self.sp1.rect, self.sp1.image)
         # self.camera1.camera_motion(event)
         # print(self.camera1.camera_setting[2])
+
+    # def point_calculations_displayed_coords(point, camera_object):
+    #     x = WIDTH // 2 - (camera_object.camera_pos[0] + point.p_x + camera_object.moving_vector[0])
+    #     x *= camera_object.camera_zoom
+    #     x = WIDTH // 2 - x
+    #
+    #     y = HEIGHT // 2 - (camera_object.camera_pos[1] + point.p_y + camera_object.moving_vector[1])
+    #     y *= camera_object.camera_zoom
+    #     y = HEIGHT // 2 - y
+    #
+    #     visual_point = (x, y)
+    #     return visual_point
 
 
 if __name__ == '__main__':

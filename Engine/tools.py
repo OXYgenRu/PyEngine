@@ -47,3 +47,48 @@ def scale_image(application, pygame_image, new_size: numpy.array = None, scale=N
             # print(1)
             scaled_image = pygame.transform.scale(pygame_image, new_size)
             return scaled_image
+
+
+def surface_convertor(point, surface, matrix: numpy.array = None):
+    if matrix is not None:
+        point1 = point
+        width = surface.get_rect().width
+        height = surface.get_rect().height
+        point2 = point1 + numpy.array([width, 0])
+        point3 = point1 + numpy.array([width, height])
+        point4 = point1 + numpy.array([0, height])
+        polygon = numpy.array([point1, point2, point3, point4])
+        new_polygon = polygon_converter(polygon, matrix)
+        new_size = new_polygon[2] - new_polygon[0]
+        return new_polygon[0], scale_image(surface.application, surface, new_size, None)
+    else:
+        return surface.transfer_vector, surface
+
+
+def render_surface_convertor(surface, matrix: numpy.array = None):
+    if matrix is not None:
+        point1 = surface.transfer_vector
+        point2 = point1 + numpy.array([surface.width, 0])
+        point3 = point1 + numpy.array([surface.width, surface.height])
+        point4 = point1 + numpy.array([0, surface.height])
+        polygon = numpy.array([point1, point2, point3, point4])
+        new_polygon = polygon_converter(polygon, matrix)
+        new_size = new_polygon[2] - new_polygon[0]
+        return new_polygon[0], scale_image(surface.application, surface, new_size, None)
+    else:
+        return surface.transfer_vector, surface
+
+
+def polygon_converter(points, matrix=None):
+    camera_matrix = numpy.array(
+        [[1, 0], [0, 1], [-0.5, 0], [0.5, 0], [0, -0.5], [0, 0.5], [1, 0], [0, 1], [0, 0]])
+    if matrix is not None:
+        new_points = numpy.empty(len(points), object)
+        for i in range(len(points)):
+            new_points[i] = []
+            matrix[0] = points[i][0] * matrix[8]
+            matrix[1] = points[i][1] * matrix[8]
+            new_points[i] = numpy.dot(matrix, camera_matrix)
+        return new_points
+    else:
+        return points

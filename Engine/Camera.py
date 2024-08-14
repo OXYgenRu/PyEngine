@@ -20,8 +20,6 @@ class Camera(Engine.RenderSurface.RenderSurface):
         self.on_surface_rect = None
         self.zoom_restrictions = zoom_restrictions
         self.on_surface_pos = numpy.array([0, 0, 0, 0], dtype=float)
-        self.height_ = height
-        self.width_ = width
         self.new_y_pos_ = 0
         self.on_surface_camera_x_pos = 0
         self.moving = False
@@ -32,7 +30,6 @@ class Camera(Engine.RenderSurface.RenderSurface):
     def render(self):
         if self.properties.get(cs.P_HIDED):
             return
-        self.fill(self.fill_color)
         for shape in self.content:
             shape.render()
         self.on_surface_pos = numpy.array([0, 0, 0, 0], dtype=float)

@@ -31,10 +31,12 @@ class MergedSpritesGroup(pygame.sprite.Group):
                 image = self.animator.get_frame()
                 for sprite in self.sprites():
                     sprite.image = image
+                    sprite.update_collision()
             if cs.E_START_NEW_ANIMATION == args[cs.E_EVENT].type:
                 image = self.animator.get_frame()
                 for sprite in self.sprites():
                     sprite.image = image
+                    sprite.update_collision()
                     sprite.update()
 
 
