@@ -3,7 +3,7 @@ import pygame
 
 from Engine.Animations.Animation import Animation
 from Engine.Animations.Animator import Animator
-from Engine.tools import scale_image
+from Engine.tools import scale_image, surface_convertor
 import Engine.constants as cs
 
 
@@ -14,8 +14,13 @@ class SingleSpritesGroup(pygame.sprite.Group):
         self.application = render_surface.application
         self.render_surface.add_content(self)
 
-    def render(self):
-        self.draw(self.render_surface)
+    def render(self, matrix: numpy.array = None, custom_surface=None):
+        for sprite in self.sprites():
+            sprite = surface_convertor(sprite.point, sprite.image, matrix, self.application)
+            if custom_surface is not None:
+                custom_surface.blit(sprite[1], sprite[0].tolist())
+            else:
+                self.render_surface.blit(sprite[1], sprite[0].tolist())
 
 
 class SingleSprite(pygame.sprite.Sprite):

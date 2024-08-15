@@ -2,7 +2,7 @@ import numpy
 import pygame
 
 from Engine.Animations.Animator import Animator
-from Engine.tools import scale_image
+from Engine.tools import scale_image, surface_convertor, polygon_converter
 import Engine.constants as cs
 
 
@@ -15,8 +15,14 @@ class MergedSpritesGroup(pygame.sprite.Group):
         self.image = self.animator.get_current_frame()
         self.render_surface.add_content(self)
 
-    def render(self):
-        self.draw(self.render_surface)
+    def render(self, matrix: numpy.array = None, custom_surface=None):
+        sprite_image = surface_convertor(numpy.array([0, 0]), self.image, matrix, self.application)
+        for sprite in self.sprites():
+            point = polygon_converter(numpy.array([sprite.point]), matrix)[0]
+            if custom_surface is not None:
+                custom_surface.blit(sprite_image[1], point.tolist())
+            else:
+                self.render_surface.blit(sprite_image[1], point.tolist())
 
     def resize_image(self, size: numpy.array = None, scale=None):
         self.animator.resize(size, scale)
@@ -28,16 +34,15 @@ class MergedSpritesGroup(pygame.sprite.Group):
         self.animator.update(args)
         if cs.E_EVENT in args:
             if pygame.USEREVENT + self.animator.event_number == args[cs.E_EVENT].type:
-                image = self.animator.get_frame()
+                self.image = self.animator.get_frame()
                 for sprite in self.sprites():
-                    sprite.image = image
+                    sprite.image = self.image
                     sprite.update_collision()
             if cs.E_START_NEW_ANIMATION == args[cs.E_EVENT].type:
-                image = self.animator.get_frame()
+                self.image = self.animator.get_frame()
                 for sprite in self.sprites():
-                    sprite.image = image
+                    sprite.image = self.image
                     sprite.update_collision()
-                    sprite.update()
 
 
 class MergedSprite(pygame.sprite.Sprite):

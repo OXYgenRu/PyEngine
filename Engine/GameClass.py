@@ -61,6 +61,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
             self.scene.update({cs.E_TICK_LENGTH: tick_length})
+            self.scene.update({cs.E_CLOSING_EVENT: cs.E_CLOSING_EVENT})
             self.scene.render()
             self.screen.blit(self.scene, (0, 0))
             pygame.display.flip()

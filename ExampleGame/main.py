@@ -163,14 +163,53 @@ class RunLeftState(State):
 class MainScene(Engine.GameScene.GameScene):
     def __init__(self, width, height, application):
         super().__init__(width=width, height=height, application=application)
-        self.pl = Engine.BasiсObjects.Polygon(self, np.array([[100, 100], [200, 100], [200, 200], [100, 200]]))
-        self.surf = Engine.RenderSurface.RenderSurface(self, 2, 200, 200, np.array([100, 200]))
-        self.pl1 = Engine.BasiсObjects.Polygon(self.surf, np.array([[50, 50], [100, 50], [200, 100], [50, 200]]))
-        self.pl1.color = 'green'
-        self.surf2 = Engine.RenderSurface.RenderSurface(self, 1, 600, 600, np.array([-200, -200]))
-        self.pl12 = Engine.BasiсObjects.Polygon(self.surf2,
-                                                np.array([[400, 400], [600, 400], [600, 600], [400, 600]]))
-        self.pl12.color = 'blue'
+        self.rect1 = Engine.BasiсObjects.Polygon(self.world_space, color='green')
+        self.rect1.set_geometry(100, 200, 500, 500)
+        self.kk = Engine.BasiсObjects.Text(self.world_space, np.array([400, 400]), 'ad')
+        self.camera = Engine.CameraV2.Camera(self.world_space, parent_surface=self.screen_space, render_priority=0,
+                                             width=width,
+                                             height=height)
+        # self.camera.set_lock()
+        self.world_space.set_filling('yellow')
+        self.camera.set_filling('yellow')
+        self.sp = Engine.SpriteSystem.MergedSprites.MergedSpritesGroup(self.world_space,
+                                                                       Animation(
+                                                                           self.application.load_image("_Run.png"), 10,
+                                                                           12, "default"),
+                                                                       numpy.array([None, None]), 1)
+
+        self.sp1 = Engine.SpriteSystem.MergedSprites.MergedSprite(numpy.array([100, 100]), self.sp)
+        self.sp11 = Engine.SpriteSystem.MergedSprites.MergedSprite(numpy.array([600, 200]), self.sp)
+
+        self.button = Engine.RenderSurface.RenderSurface(self.screen_space, 1, width, height)
+        self.rect = Engine.BasiсObjects.Polygon(self.button)
+        self.rect.set_geometry(0, 0, 200, 200)
+
+        self.asp2 = Engine.SpriteSystem.SingleSprites.SingleSpritesGroup(self.world_space)
+
+        self.an3 = Animation(self.application.load_image("_Run.png"), 10, 12, "run_right")
+
+        self.asp1 = Engine.SpriteSystem.SingleSprites.SingleSprite(None,
+                                                                   np.array([500, 200 // 2]),
+                                                                   np.array([None, None]), 1,
+                                                                   self.asp2)
+        self.asp10 = Engine.SpriteSystem.SingleSprites.SingleSprite(None,
+                                                                    np.array([700, 200 // 2]),
+                                                                    np.array([None, None]), 1,
+                                                                    self.asp2)
+        self.asp10.animator = self.asp1.animator
+
+        self.asp1.animator.add_animation(self.an3)
+        self.asp1.animator.load_animation("run_right")
+
+        self.sp.animator.add_animation(self.an3)
+        self.sp.animator.load_animation("run_right")
+
+    def on_update(self, args):
+        # print(pygame.key.get_pressed())aw
+        # if "tick_length" in args:
+        #     print(1000 / args["tick_length"])
+        pass
 
 
 class SecondScene(Engine.GameScene.GameScene):
@@ -262,7 +301,7 @@ class SecondScene(Engine.GameScene.GameScene):
 
 
 if __name__ == '__main__':
-    game = Engine.GameClass.Game((1366, 765), 100, '1', __file__)
+    game = Engine.GameClass.Game((1366, 765), 100, '2', __file__)
     game.register_scene(SecondScene, '1')
     game.register_scene(MainScene, '2')
     game.register_font('Arial', 40, 'arial_40')

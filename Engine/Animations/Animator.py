@@ -34,6 +34,7 @@ class Animator:
         self.symmetrically_x = False
         self.symmetrically_y = False
         self.connected_state_machine = None
+        self.updated = False
 
         self.load_animation(self.active_animation_id)
 
@@ -49,8 +50,12 @@ class Animator:
             return Animation(default_animation, 1, 1, "default")
 
     def get_frame(self):
+        if self.updated is True:
+            return self.get_current_frame()
+        self.updated = True
         if self.end_of_animation:
             self.animation_finished(cs.A_STOP_TIMER_EVENT)
+        print(self.current_frame_id)
         frame = self.original_frames[self.current_frame_id]
         frame_index = self.current_frame_id
         if self.current_frame_id == self.frames_cnt - 1 and self.playing_cnt >= 1:
@@ -124,6 +129,8 @@ class Animator:
             if args[cs.E_EVENT].type == pygame.USEREVENT + self.stop_animation_event:
                 self.application.delete_timer(self.stop_animation_event)
                 self.animation_finished(cs.A_STOP_TIMER_EVENT)
+        if cs.E_CLOSING_EVENT in args:
+            self.updated = False
 
     def animation_finished(self, cause):
         self.load_default_animation()

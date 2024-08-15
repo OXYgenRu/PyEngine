@@ -7,6 +7,7 @@ E_PRESSED_BUTTONS = "pressed_buttons"
 E_TICK_LENGTH = "tick_length"
 E_EVENT = 'event'
 E_START_NEW_ANIMATION = 0
+E_CLOSING_EVENT = "closing_event"
 A_STOP_TIMER_EVENT = 0
 A_STOP_COUNT = 1
 A_STOP_ARTIFICIALLY = 2

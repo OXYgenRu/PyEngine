@@ -9,7 +9,8 @@ import numpy as np
 
 
 class Camera(Engine.RenderSurface.RenderSurface):
-    def __init__(self, camera_setting: numpy.array = numpy.array([0, 0, 1, 0.7]), parent_surface=None,
+    def __init__(self, connected_surface, camera_setting: numpy.array = numpy.array([0, 0, 1, 0.7]),
+                 parent_surface=None,
                  render_priority=None, width=None, height=None,
                  transfer_vector: numpy.array = numpy.array([0, 0]), zoom_restrictions: numpy.array = None):
         super().__init__(parent_surface, render_priority, width, height, transfer_vector)
@@ -19,6 +20,7 @@ class Camera(Engine.RenderSurface.RenderSurface):
 
         self.on_surface_rect = None
         self.zoom_restrictions = zoom_restrictions
+        self.connected_surface = connected_surface
         self.on_surface_pos = numpy.array([0, 0, 0, 0], dtype=float)
         self.new_y_pos_ = 0
         self.on_surface_camera_x_pos = 0
@@ -32,15 +34,21 @@ class Camera(Engine.RenderSurface.RenderSurface):
         matrix = [0, 0, self.width * self.camera_setting[2], self.width, self.height * self.camera_setting[2],
                   self.height, self.camera_setting[0] * self.camera_setting[2],
                   self.camera_setting[1] * self.camera_setting[2], self.camera_setting[2]]
-        for shape in self.content:
-            shape.render(numpy.array(matrix))
+        for shape in self.connected_surface.content:
+            shape.render(numpy.array(matrix), self)
         surfaces_to_bake_list = []
-        for surface_priority in self.surfaces_priorities:
-            for surface in self.surfaces[surface_priority]:
+        for surface_priority in self.connected_surface.surfaces_priorities:
+            for surface in self.connected_surface.surfaces[surface_priority]:
                 surface.render()
                 current_surface = render_surface_convertor(surface, matrix)
                 surfaces_to_bake_list.append((current_surface[1], current_surface[0]))
         self.blits(surfaces_to_bake_list)
+
+    def clear_surface(self):
+        self.fill(self.fill_color)
+        for surface_priority in self.connected_surface.surfaces_priorities:
+            for surface in self.connected_surface.surfaces[surface_priority]:
+                surface.clear_surface()
 
     def on_update(self, args):
         if cs.E_EVENT in args:
@@ -48,6 +56,8 @@ class Camera(Engine.RenderSurface.RenderSurface):
             self.camera_motion(event)
 
     def camera_motion(self, event):
+        if self.properties.get("locked"):
+            return
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
             self.start_pos = event.pos
             self.moving = True
@@ -77,3 +87,9 @@ class Camera(Engine.RenderSurface.RenderSurface):
             self.camera_setting[2] = zoom
         if zoom_sensitivity is not None:
             self.camera_setting[3] = zoom_sensitivity
+
+    def set_lock(self):
+        self.properties.update("locked", True)
+
+    def set_unlock(self):
+        self.properties.update("locked", False)

@@ -49,7 +49,7 @@ def scale_image(application, pygame_image, new_size: numpy.array = None, scale=N
             return scaled_image
 
 
-def surface_convertor(point, surface, matrix: numpy.array = None):
+def surface_convertor(point, surface, matrix: numpy.array = None, application=None):
     if matrix is not None:
         point1 = point
         width = surface.get_rect().width
@@ -60,9 +60,9 @@ def surface_convertor(point, surface, matrix: numpy.array = None):
         polygon = numpy.array([point1, point2, point3, point4])
         new_polygon = polygon_converter(polygon, matrix)
         new_size = new_polygon[2] - new_polygon[0]
-        return new_polygon[0], scale_image(surface.application, surface, new_size, None)
+        return new_polygon[0], scale_image(application, surface, new_size, None)
     else:
-        return surface.transfer_vector, surface
+        return point, surface
 
 
 def render_surface_convertor(surface, matrix: numpy.array = None):
