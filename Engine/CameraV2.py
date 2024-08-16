@@ -27,6 +27,8 @@ class Camera(Engine.RenderSurface.RenderSurface):
         self.moving = False
         self.start_pos = None
         self.camera_setting = camera_setting.copy()
+        self.connected_surface.set_visible_off()
+        self.connected_surface.disable_ui_colliders()
 
     def render(self):
         if self.properties.get(cs.P_HIDED):
@@ -93,3 +95,25 @@ class Camera(Engine.RenderSurface.RenderSurface):
 
     def set_unlock(self):
         self.properties.update("locked", False)
+
+    def update_ui_colliders(self, mouse_event: pygame.event.Event, mouse_pos):
+        reversed_list = list(self.connected_surface.surfaces_priorities)[::-1]
+        flag = False
+        vector = -numpy.array(
+            [self.width // 2, self.height // 2], dtype=float) + numpy.array([mouse_pos[0], mouse_pos[1]], dtype=float)
+        vector /= self.camera_setting[2]
+        vector -= numpy.array(
+            [self.camera_setting[0], self.camera_setting[1]], dtype=float)
+        vector += numpy.array(
+            [self.width // 2, self.height // 2])
+        # print(vector)
+        for surface_priority in reversed_list:
+            for surface in self.connected_surface.surfaces[surface_priority]:
+                flag = surface.update_ui_colliders(mouse_event, vector.tolist())
+                if flag is True:
+                    return True
+        for ui_collider in self.connected_surface.colliders:
+            flag = ui_collider.mouse_event_update(mouse_event, vector.tolist())
+            if flag is True:
+                return True
+        return False

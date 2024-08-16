@@ -6,6 +6,7 @@ from collections import defaultdict
 import pygame
 import Engine
 import Engine.constants as cs
+from Engine.Colliders.UICollider import UIColliderSystem
 
 
 class Game:
@@ -19,6 +20,7 @@ class Game:
         self.fps = fps
         self.start_scene_id = start_scene_id
         self.scene = None
+
         self.scene_storage = defaultdict()
         self.loaded_scene_storage = defaultdict(None)
         self.font_storage = defaultdict()
@@ -26,6 +28,8 @@ class Game:
         self.init_properties()
         self.timers = defaultdict(bool)
         print(self.game_folder)
+
+        self.ui_collider_system = UIColliderSystem(self)
 
     def init_properties(self):
         self.properties.update(cs.P_SCALING_TYPE, cs.P_SCALING_TYPE_PYGAME)
@@ -51,15 +55,12 @@ class Game:
             self.screen.fill((0, 0, 0))
             self.scene.clear_surface()
             pressed_buttons = pygame.key.get_pressed()
-            # # buttoms
-            # key_buttons = defaultdict(int)
-            #
-            # # print(pressed_buttons[1025])
-            # self.scene.update({cs.E_PRESSED_BUTTONS: pressed_buttons})
             for event in pygame.event.get():
                 self.scene.update({cs.E_EVENT: event, cs.E_PRESSED_BUTTONS: pressed_buttons})
+                self.ui_collider_system.update(event)
                 if event.type == pygame.QUIT:
                     running = False
+            self.ui_collider_system.update_colliders()
             self.scene.update({cs.E_TICK_LENGTH: tick_length})
             self.scene.update({cs.E_CLOSING_EVENT: cs.E_CLOSING_EVENT})
             self.scene.render()

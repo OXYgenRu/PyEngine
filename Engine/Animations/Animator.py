@@ -55,7 +55,6 @@ class Animator:
         self.updated = True
         if self.end_of_animation:
             self.animation_finished(cs.A_STOP_TIMER_EVENT)
-        print(self.current_frame_id)
         frame = self.original_frames[self.current_frame_id]
         frame_index = self.current_frame_id
         if self.current_frame_id == self.frames_cnt - 1 and self.playing_cnt >= 1:

@@ -34,7 +34,9 @@ class RenderSurface(pygame.Surface):
         self.surfaces_priorities = SortedSet()
 
         self.properties = Engine.PropertyStorage.PropertyStorage()
-        self.show()
+        self.set_visible_on()
+
+        self.colliders = []
 
         if parent_surface is not None:
             self.application = parent_surface.application
@@ -71,6 +73,8 @@ class RenderSurface(pygame.Surface):
         self.blits(surfaces_to_bake_list)
 
     def clear_surface(self):
+        if self.properties.get(cs.P_HIDED):
+            return
         self.fill(self.fill_color)
         for surface_priority in self.surfaces_priorities:
             for surface in self.surfaces[surface_priority]:
@@ -85,20 +89,33 @@ class RenderSurface(pygame.Surface):
             [[0, 0], [self.width - 2, 0], [self.width - 2, self.height - 2], [0, self.height - 2]]), color, 2)
 
     def hide_border(self):
-        self.border_surface.hide()
+        self.border_surface.set_visible_off()
 
     def show_border(self):
-        self.border_surface.show()
+        self.border_surface.set_visible_on()
 
-    def hide(self):
+    def set_visible_off(self):
         self.properties.update(cs.P_HIDED, True)
 
-    def show(self):
+    def set_visible_on(self):
         self.properties.update(cs.P_HIDED, False)
 
+    def set_updatable_off(self):
+        self.properties.update(cs.P_UPDATABLE, True)
+
+    def set_updatable_on(self):
+        self.properties.update(cs.P_UPDATABLE, False)
+
+    def disable_ui_colliders(self):
+        self.properties.update(cs.P_UI_COLLIDERS, True)
+
+    def enable_ui_colliders(self):
+        self.properties.update(cs.P_UI_COLLIDERS, False)
+
     def update(self, args):
-        if self.properties.get(cs.P_HIDED):
+        if self.properties.get(cs.P_UPDATABLE):
             return
+
         self.on_update(args)
         for element in self.updating_content:
             element.update(args)
@@ -115,3 +132,19 @@ class RenderSurface(pygame.Surface):
     def set_point(self, point: np.array):
         new_vector = point - self.transfer_vector
         self.move(new_vector)
+
+    def update_ui_colliders(self, mouse_event: pygame.event.Event, mouse_pos):
+        if self.properties.get(cs.P_UI_COLLIDERS):
+            return
+        reversed_list = list(self.surfaces_priorities)[::-1]
+        flag = False
+        for surface_priority in reversed_list:
+            for surface in self.surfaces[surface_priority]:
+                flag = surface.update_ui_colliders(mouse_event, mouse_pos)
+                if flag is True:
+                    return True
+        for ui_collider in self.colliders:
+            flag = ui_collider.mouse_event_update(mouse_event, mouse_pos)
+            if flag is True:
+                return True
+        return False

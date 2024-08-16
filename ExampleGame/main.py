@@ -17,6 +17,7 @@ from Engine.Animations.Animation import Animation
 import Engine.StateMachine.StateMachine
 from Engine.StateMachine.State import State
 import Engine.CameraV2
+from Engine.Colliders.UICollider import UICollider
 
 
 class DefaultRight(State):
@@ -163,8 +164,14 @@ class RunLeftState(State):
 class MainScene(Engine.GameScene.GameScene):
     def __init__(self, width, height, application):
         super().__init__(width=width, height=height, application=application)
+        # self.world_space.hide()
+
         self.rect1 = Engine.BasiсObjects.Polygon(self.world_space, color='green')
         self.rect1.set_geometry(100, 200, 500, 500)
+        self.collider = UICollider(self.world_space, self.rect1.points)
+        self.collider.on_mouse_enter = self.uu
+        self.collider.on_mouse_exit = self.uu1
+        self.collider.on_mouse_down = self.uu2
         self.kk = Engine.BasiсObjects.Text(self.world_space, np.array([400, 400]), 'ad')
         self.camera = Engine.CameraV2.Camera(self.world_space, parent_surface=self.screen_space, render_priority=0,
                                              width=width,
@@ -182,6 +189,7 @@ class MainScene(Engine.GameScene.GameScene):
         self.sp11 = Engine.SpriteSystem.MergedSprites.MergedSprite(numpy.array([600, 200]), self.sp)
 
         self.button = Engine.RenderSurface.RenderSurface(self.screen_space, 1, width, height)
+
         self.rect = Engine.BasiсObjects.Polygon(self.button)
         self.rect.set_geometry(0, 0, 200, 200)
 
@@ -204,6 +212,15 @@ class MainScene(Engine.GameScene.GameScene):
 
         self.sp.animator.add_animation(self.an3)
         self.sp.animator.load_animation("run_right")
+
+    def uu(self):
+        self.rect1.color = 'blue'
+
+    def uu1(self):
+        self.rect1.color = 'green'
+
+    def uu2(self, a):
+        self.camera.set_filling((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
 
     def on_update(self, args):
         # print(pygame.key.get_pressed())aw
