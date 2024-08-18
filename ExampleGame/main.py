@@ -206,8 +206,9 @@ class MainScene(Engine.GameScene.GameScene):
 
     def on_update(self, args):
         # print(pygame.key.get_pressed())aw
-        if "tick_length" in args:
-            print(1000 / args["tick_length"])
+        # if "tick_length" in args:
+        #     print(1000 / args["tick_length"])
+        print(self.application.ui_collider_system.active_clicked_ui_collider)
         pass
 
 

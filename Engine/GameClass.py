@@ -29,7 +29,7 @@ class Game:
         self.timers = defaultdict(bool)
         print(self.game_folder)
 
-        self.ui_collider_system = UIColliderSystem(self)
+        self.ui_collider_system: UIColliderSystem = UIColliderSystem(self)
 
     def init_properties(self):
         self.properties.update(cs.P_SCALING_TYPE, cs.P_SCALING_TYPE_PYGAME)
