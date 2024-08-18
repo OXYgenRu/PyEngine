@@ -133,14 +133,14 @@ class RenderSurface(pygame.Surface):
         new_vector = point - self.transfer_vector
         self.move(new_vector)
 
-    def update_ui_colliders(self, mouse_event: pygame.event.Event, mouse_pos):
+    def update_ui_colliders(self, mouse_event: pygame.event.Event, mouse_pos: numpy.array):
         if self.properties.get(cs.P_UI_COLLIDERS):
             return
         reversed_list = list(self.surfaces_priorities)[::-1]
         flag = False
         for surface_priority in reversed_list:
             for surface in self.surfaces[surface_priority]:
-                flag = surface.update_ui_colliders(mouse_event, mouse_pos)
+                flag = surface.update_ui_colliders(mouse_event, mouse_pos - surface.transfer_vector)
                 if flag is True:
                     return True
         for ui_collider in self.colliders:
@@ -148,3 +148,5 @@ class RenderSurface(pygame.Surface):
             if flag is True:
                 return True
         return False
+    # def get_points(self):
+    #     numpy

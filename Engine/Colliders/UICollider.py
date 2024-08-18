@@ -57,15 +57,18 @@ class UIColliderSystem:
 
     def update(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button != 4 and event.button != 5:
-            result = self.application.scene.update_ui_colliders(event, event.pos)
+            pos = numpy.array([event.pos[0], event.pos[1]])
+            result = self.application.scene.update_ui_colliders(event, pos)
             if self.on_mouse_button_down_collide is None or self.on_mouse_button_down_collide is False:
                 self.on_mouse_button_down_collide = result
         if event.type == pygame.MOUSEBUTTONUP and event.button != 4 and event.button != 5:
-            result = self.application.scene.update_ui_colliders(event, event.pos)
+            pos = numpy.array([event.pos[0], event.pos[1]])
+            result = self.application.scene.update_ui_colliders(event, pos)
             if self.on_mouse_button_up_collide is None or self.on_mouse_button_up_collide is False:
                 self.on_mouse_button_up_collide = result
         if event.type == pygame.MOUSEMOTION:
-            result = self.application.scene.update_ui_colliders(event, event.pos)
+            pos = numpy.array([event.pos[0], event.pos[1]])
+            result = self.application.scene.update_ui_colliders(event, pos)
             if self.on_mouse_button_motion_collide is None or self.on_mouse_button_motion_collide is False:
                 self.on_mouse_button_motion_collide = result
 

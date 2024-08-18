@@ -19,6 +19,7 @@ from Engine.StateMachine.State import State
 import Engine.CameraV2
 from Engine.Colliders.UICollider import UICollider
 from Engine.SpriteSystem.Sprite import Sprite, SpriteSource
+from ExampleGame.start_scene import Menu
 
 
 class DefaultRight(State):
@@ -208,7 +209,7 @@ class MainScene(Engine.GameScene.GameScene):
         # print(pygame.key.get_pressed())aw
         # if "tick_length" in args:
         #     print(1000 / args["tick_length"])
-        print(self.application.ui_collider_system.active_clicked_ui_collider)
+        # print(self.application.ui_collider_system.active_clicked_ui_collider)
         pass
 
 
@@ -301,6 +302,7 @@ class SecondScene(Engine.GameScene.GameScene):
 if __name__ == '__main__':
     game = Engine.GameClass.Game((1366, 765), 100, '2', __file__)
     game.register_scene(SecondScene, '1')
+    game.register_scene(Menu, 'menu')
     game.register_scene(MainScene, '2')
     game.register_font('Arial', 40, 'arial_40')
     game.set_property(cs.P_SCALING_TYPE, cs.P_SCALING_TYPE_PYGAME)
