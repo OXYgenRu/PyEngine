@@ -27,16 +27,19 @@ class UICollider:
         return True
 
     def on_mouse_enter(self):
-        print("enter")
+        pass
 
     def on_mouse_exit(self):
-        print("exit")
+        pass
 
     def on_mouse_down(self, button):
-        print("down")
+        pass
 
     def on_mouse_up(self, button):
-        print("up")
+        pass
+
+    def on_mouse_over(self):
+        pass
 
 
 class UIColliderSystem:
@@ -59,3 +62,5 @@ class UIColliderSystem:
                 self.active_entered_ui_collider.on_mouse_exit()
                 self.active_entered_ui_collider = None
         self.mouse_collide = None
+        if self.active_entered_ui_collider is not None:
+            self.active_entered_ui_collider.on_mouse_over()

@@ -36,6 +36,7 @@ class Polygon(Shape):
             width = self.width * matrix[8]
         if self.width != 0:
             width = max(1, width)
+        # shapely.Polygon.intersection()
         if custom_surface is not None:
             pygame.draw.polygon(custom_surface, self.color, new_points.tolist(), int(width))
         else:

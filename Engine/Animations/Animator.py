@@ -43,11 +43,11 @@ class Animator:
         if default_animation is None:
             surface = pygame.Surface((10, 10), pygame.SRCALPHA)
             surface.fill((0, 0, 0, 0))
-            return Animation(surface, 1, 1, "default")
+            return Animation(surface, 1, 0, "default")
         if type(default_animation) is not pygame.surface.Surface:
             return default_animation
         else:
-            return Animation(default_animation, 1, 1, "default")
+            return Animation(default_animation, 1, 0, "default")
 
     def get_frame(self):
         if self.updated is True:
@@ -110,7 +110,8 @@ class Animator:
         self.resize(self.size, self.scale)
         if self.event_number != -1:
             self.application.delete_timer(self.event_number)
-        self.event_number = self.application.set_timer(int(1000 / self.fps))
+        if self.fps != 0:
+            self.event_number = self.application.set_timer(int(1000 / self.fps))
         if playing_time is not None:
             self.stop_animation_event = self.application.set_timer(playing_time)
         if playing_cnt is not None:
