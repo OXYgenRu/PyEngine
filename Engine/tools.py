@@ -4,8 +4,6 @@ import pygame
 from PIL import Image
 from PIL import Image, ImageGrab, ImageOps
 import Engine.constants as cs
-import cv2
-import cupy as cp
 
 
 def scale_image(application, pygame_image, new_size: numpy.array = None, scale=None):
