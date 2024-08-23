@@ -1,3 +1,4 @@
+import math
 import random
 import time
 
@@ -179,7 +180,7 @@ class MainScene(Engine.GameScene.GameScene):
         self.camera = Engine.CameraV2.Camera(self.world_space, parent_surface=self.screen_space, render_priority=0,
                                              width=width,
                                              height=height)
-        self.camera.camera_setting[2] = 65
+        self.camera.camera_setting[2] = 1
         self.world_space.set_filling('yellow')
         self.camera.set_filling('yellow')
         self.sprite_source = SpriteSource(self.application, Animation(
@@ -188,10 +189,22 @@ class MainScene(Engine.GameScene.GameScene):
         for i in range(0, 100):
             Sprite(self.world_space, self.sprite_source, np.array([100 * i, 100]))
 
-        self.button = Engine.RenderSurface.RenderSurface(self.screen_space, 1, width, height)
+        self.button = Engine.RenderSurface.RenderSurface(self.world_space, 1, width, height,
+                                                         transfer_vector=numpy.array([0, 0]))
 
-        self.rect = Engine.BasiсObjects.Polygon(self.button)
-        self.rect.set_geometry(0, 0, 200, 200)
+        self.button.set_filling('blue')
+        self.button.rotation_pos = numpy.array([-2, 0])
+        self.slepa = Engine.SpriteSystem.Sprite.SpriteSource(self.application, self.application.load_image("slepa.jpg"),
+                                                             np.array([None, None]), 1)
+        # self.button.angle = 100
+        self.sp = Engine.SpriteSystem.Sprite.Sprite(self.button, self.slepa,
+                                                    np.array([0, 0]))
+        # sr = pygame.transform.rotate(self.button, self.button.angle)
+        # print(current_surface, sr)
+        # print( self.button.get_rect().height * math.sin(math.radians(surface.angle)))
+        # print(sr.get_rect(topleft=(0, 0)))
+        # self.rect = Engine.BasiсObjects.Polygon(self.button)
+        # self.rect.set_geometry(0, 0, 200, 200)
 
     def uu(self):
         self.rect1.color = 'blue'
@@ -203,13 +216,12 @@ class MainScene(Engine.GameScene.GameScene):
         self.camera.set_filling((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
 
     def u3(self):
-        self.kk.text = str(int(self.kk.text) + 1)
+        self.button.angle += 0.55
 
     def on_update(self, args):
-        # print(pygame.key.get_pressed())aw
         # if "tick_length" in args:
         #     print(1000 / args["tick_length"])
-        # print(self.application.ui_collider_system.active_clicked_ui_collider)
+
         pass
 
 
@@ -228,6 +240,7 @@ class SecondScene(Engine.GameScene.GameScene):
         self.state_machine = Engine.StateMachine.StateMachine.StateMachine(self)
         self.player = Engine.RenderSurface.RenderSurface(self.display, 10, 200, 200,
                                                          [self.width // 2 - 100, self.height // 2 - 100])
+        # self.player
         self.player.add_border("green")
         self.player.set_filling('red')
 

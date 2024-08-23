@@ -2,15 +2,13 @@ import numpy
 import pygame.event
 from shapely import Polygon, Point
 
-from Engine import GameClass
-
 
 class UICollider:
     def __init__(self, render_surface, points: numpy.array):
         self.points = points
         self.render_surface = render_surface
         self.mouse_entered = False
-        self.application: GameClass = render_surface.application
+        self.application = render_surface.application
         self.render_surface.colliders.append(self)
 
     def mouse_event_update(self, mouse_event: pygame.event.Event, mouse_pos) -> bool:

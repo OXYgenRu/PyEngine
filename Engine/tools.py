@@ -1,6 +1,7 @@
 import numpy
 import numpy as np
 import pygame
+import shapely
 from PIL import Image
 from PIL import Image, ImageGrab, ImageOps
 import Engine.constants as cs
@@ -47,7 +48,7 @@ def scale_image(application, pygame_image, new_size: numpy.array = None, scale=N
             return scaled_image
 
 
-def surface_convertor(point, surface, matrix: numpy.array = None, application=None):
+def surface_convertor(point, surface, matrix: numpy.array = None, application=None) -> tuple:
     if matrix is not None:
         point1 = point
         width = surface.get_rect().width
@@ -63,21 +64,27 @@ def surface_convertor(point, surface, matrix: numpy.array = None, application=No
         return point, surface
 
 
-def render_surface_convertor(surface, matrix: numpy.array = None):
+def render_surface_convertor(surface, matrix: numpy.array = None) -> tuple:
     if matrix is not None:
-        point1 = surface.transfer_vector
+        point1 = numpy.array([surface.transfer_vector[0] - surface.width * surface, surface.transfer_vector[1]])
         point2 = point1 + numpy.array([surface.width, 0])
         point3 = point1 + numpy.array([surface.width, surface.height])
         point4 = point1 + numpy.array([0, surface.height])
         polygon = numpy.array([point1, point2, point3, point4])
         new_polygon = polygon_converter(polygon, matrix)
+
+        points_list = [tuple(point) for point in new_polygon]
+        shapely_polygon = shapely.Polygon(points_list)
+
+        camera_polygon = shapely.Polygon([(0, 0), (matrix[3], 0), (matrix[3], matrix[5]), (0, matrix[5])])
+        to_show_polygon = shapely_polygon.intersection(camera_polygon)
         new_size = new_polygon[2] - new_polygon[0]
         return new_polygon[0], scale_image(surface.application, surface, new_size, None)
     else:
         return surface.transfer_vector, surface
 
 
-def polygon_converter(points, matrix=None):
+def polygon_converter(points, matrix=None) -> numpy.array:
     camera_matrix = numpy.array(
         [[1, 0], [0, 1], [-0.5, 0], [0.5, 0], [0, -0.5], [0, 0.5], [1, 0], [0, 1], [0, 0]])
     if matrix is not None:
@@ -90,3 +97,5 @@ def polygon_converter(points, matrix=None):
         return new_points
     else:
         return points
+
+# def rotate_render_surface(point,render_surface, angle):

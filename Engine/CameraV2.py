@@ -1,10 +1,13 @@
+import math
+
 import numpy
 import pygame
+import shapely
 
 import Engine.RenderSurface
 
 import Engine.constants as cs
-from Engine.tools import scale_image, render_surface_convertor
+from Engine.tools import scale_image, render_surface_convertor, surface_convertor
 import numpy as np
 
 
@@ -42,8 +45,12 @@ class Camera(Engine.RenderSurface.RenderSurface):
         for surface_priority in self.connected_surface.surfaces_priorities:
             for surface in self.connected_surface.surfaces[surface_priority]:
                 surface.render()
-                current_surface = render_surface_convertor(surface, matrix)
-                surfaces_to_bake_list.append((current_surface[1], current_surface[0]))
+                rotated_surface = surface.get_surface()
+                current_surface = surface_convertor(surface.transfer_vector, rotated_surface[2], matrix,
+                                                    self.application)
+                surfaces_to_bake_list.append(
+                    (current_surface[1], (current_surface[0][0] + rotated_surface[0] * self.camera_setting[2],
+                                          current_surface[0][1] + rotated_surface[1] * self.camera_setting[2])))
         self.blits(surfaces_to_bake_list)
 
     def clear_surface(self):
@@ -106,7 +113,6 @@ class Camera(Engine.RenderSurface.RenderSurface):
             [self.camera_setting[0], self.camera_setting[1]], dtype=float)
         vector += numpy.array(
             [self.width // 2, self.height // 2])
-        # print(vector)
         for surface_priority in reversed_list:
             for surface in self.connected_surface.surfaces[surface_priority]:
                 flag = surface.update_ui_colliders(mouse_event, vector.tolist())
@@ -117,3 +123,4 @@ class Camera(Engine.RenderSurface.RenderSurface):
             if flag is True:
                 return True
         return False
+    # def

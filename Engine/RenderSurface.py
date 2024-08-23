@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pygame
 import numpy
@@ -23,10 +25,11 @@ class RenderSurface(pygame.Surface):
         self.rendered_surface = pygame.Surface((width, height), pygame.SRCALPHA)
         self.rendered_surface.fill((0, 0, 0, 0))
         self.transfer_vector = transfer_vector
+        self.angle = 0
         self.screen_vector = None
 
         self.fill_color = (0, 0, 0, 0)
-
+        self.pp = numpy.array([[100, 100], [500, 500], [100, 100]])
         self.content = []
         self.updating_content = []
 
@@ -37,6 +40,9 @@ class RenderSurface(pygame.Surface):
         self.set_visible_on()
 
         self.colliders = []
+
+        # числа от 0 до 1, для получения координаты умножить на длину и высоту
+        self.rotation_pos = numpy.array([0, 0])
 
         if parent_surface is not None:
             self.application = parent_surface.application
@@ -69,7 +75,8 @@ class RenderSurface(pygame.Surface):
         for surface_priority in self.surfaces_priorities:
             for surface in self.surfaces[surface_priority]:
                 surface.render()
-                surfaces_to_bake_list.append((surface, tuple(surface.transfer_vector)))
+                surfaces_to_bake_list.append(
+                    (pygame.transform.rotate(surface, surface.angle), tuple(surface.transfer_vector)))
         self.blits(surfaces_to_bake_list)
 
     def clear_surface(self):
@@ -148,5 +155,56 @@ class RenderSurface(pygame.Surface):
             if flag is True:
                 return True
         return False
+
     # def get_points(self):
     #     numpy
+    def get_points(self) -> numpy.array:
+        rotation_point = numpy.array(
+            [self.width * self.rotation_pos[0],
+             self.height * self.rotation_pos[1]])
+
+        point_1 = numpy.array([self.transfer_vector[0] - rotation_point[0],
+                               self.transfer_vector[1] - rotation_point[1]])
+        # print(point_1)
+        point_2 = numpy.array([self.transfer_vector[0] + (self.width - rotation_point[0]),
+                               self.transfer_vector[1] - rotation_point[1]])
+        point_3 = numpy.array([self.transfer_vector[0] + (self.width - rotation_point[0]),
+                               self.transfer_vector[1] + (self.height - rotation_point[1])])
+        point_4 = numpy.array([self.transfer_vector[0] - rotation_point[0],
+                               self.transfer_vector[1] + (self.height - rotation_point[1])])
+        return numpy.array([point_1, point_2, point_3, point_4])
+
+    def get_vectors(self) -> numpy.array:
+        points: numpy.array = self.get_points()
+        rotation_point: numpy.array = numpy.array(
+            [self.transfer_vector[0], self.transfer_vector[1]])
+        vector_1: numpy.array = rotation_point - points[0]
+        vector_1 = numpy.array([vector_1[0], vector_1[1], math.sqrt(vector_1[0] ** 2 + vector_1[1] ** 2)])
+        vector_2: numpy.array = rotation_point - points[1]
+        vector_2 = numpy.array([vector_2[0], vector_2[1], math.sqrt(vector_2[0] ** 2 + vector_2[1] ** 2)])
+        vector_3: numpy.array = rotation_point - points[2]
+        vector_3 = numpy.array([vector_3[0], vector_3[1], math.sqrt(vector_3[0] ** 2 + vector_3[1] ** 2)])
+        vector_4: numpy.array = rotation_point - points[3]
+        vector_4 = numpy.array([vector_4[0], vector_4[1], math.sqrt(vector_4[0] ** 2 + vector_4[1] ** 2)])
+        return numpy.array([vector_1, vector_2, vector_3, vector_4])
+
+    def get_surface(self) -> tuple:
+        rotated_surface: pygame.surface.Surface = pygame.transform.rotate(self, self.angle)
+        vectors: numpy.array = self.get_vectors()
+
+        angle_1: float = math.atan2(vectors[0][1], vectors[0][0]) - math.radians(self.angle)
+
+        vector_1: numpy.array = numpy.array([vectors[0][2] * math.cos(angle_1), vectors[0][2] * math.sin(angle_1)])
+
+        angle_2: float = math.atan2(vectors[1][1], vectors[1][0]) - math.radians(self.angle)
+        vector_2: numpy.array = numpy.array([vectors[1][2] * math.cos(angle_2), vectors[1][2] * math.sin(angle_2)])
+
+        angle_3: float = math.atan2(vectors[2][1], vectors[2][0]) - math.radians(self.angle)
+        vector_3: numpy.array = numpy.array([vectors[2][2] * math.cos(angle_3), vectors[2][2] * math.sin(angle_3)])
+
+        angle_4: float = math.atan2(vectors[3][1], vectors[3][0]) - math.radians(self.angle)
+        vector_4: numpy.array = numpy.array([vectors[3][2] * math.cos(angle_4), vectors[3][2] * math.sin(angle_4)])
+
+        shift_x = -max(vector_1.tolist()[0], vector_2.tolist()[0], vector_3.tolist()[0], vector_4.tolist()[0])
+        shift_y = min(-vector_1.tolist()[1], -vector_2.tolist()[1], -vector_3.tolist()[1], -vector_4.tolist()[1])
+        return shift_x, shift_y, rotated_surface

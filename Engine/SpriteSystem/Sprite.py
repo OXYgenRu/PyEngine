@@ -34,7 +34,7 @@ class SpriteSource:
             self.matrix = matrix
             self.rendered_image = surface_convertor(numpy.array([0, 0]), self.image, matrix, self.application)[1]
             self.image_to_update = False
-        if matrix[8] != self.matrix[8] or self.image_to_update:
+        elif matrix[8] != self.matrix[8] or self.image_to_update:
             self.matrix = matrix
             self.rendered_image = surface_convertor(numpy.array([0, 0]), self.image, matrix, self.application)[1]
             self.image_to_update = False
