@@ -23,6 +23,18 @@ from Engine.SpriteSystem.Sprite import Sprite, SpriteSource
 from ExampleGame.start_scene import Menu
 
 
+class FPSMeter(Engine.RenderSurface.RenderSurface):
+    def __init__(self, parent_surface=None, render_priority=None, width=None, height=None,
+                 transfer_vector: numpy.array = numpy.array([0, 0])):
+        super().__init__(parent_surface, render_priority, width, height, transfer_vector)
+        self.fps = Engine.BasiсObjects.Text(self, np.array([0, 0]), "0", color='green')
+
+    def on_update(self, args):
+        # print(1)
+        if cs.E_TICK_LENGTH in args:
+            self.fps.text = str(1000 / args[cs.E_TICK_LENGTH])
+
+
 class DefaultRight(State):
     def __init__(self, state_id):
         super().__init__(state_id)
@@ -169,42 +181,34 @@ class MainScene(Engine.GameScene.GameScene):
         super().__init__(width=width, height=height, application=application)
         # self.world_space.hide()
 
-        self.rect1 = Engine.BasiсObjects.Polygon(self.world_space, color='green')
-        self.rect1.set_geometry(100, 200, 500, 500)
+        self.rect1 = Engine.BasiсObjects.Polygon(self.world_space, color='red', width=0)
+        self.rect1.set_geometry(width * 2, 0, width, height)
         self.collider = UICollider(self.world_space, self.rect1.points)
         self.collider.on_mouse_enter = self.uu
         self.collider.on_mouse_exit = self.uu1
         self.collider.on_mouse_down = self.uu2
         self.collider.on_mouse_over = self.u3
-        self.kk = Engine.BasiсObjects.Text(self.world_space, np.array([400, 400]), '1')
+        self.fps_meter = FPSMeter(self.screen_space, 2, 50, 25)
+        # self.fps_meter.add_border()
         self.camera = Engine.CameraV2.Camera(self.world_space, parent_surface=self.screen_space, render_priority=0,
                                              width=width,
                                              height=height)
-        self.camera.camera_setting[2] = 1
+        # self.camera.camera_setting[2] = 1
         self.world_space.set_filling('yellow')
         self.camera.set_filling('yellow')
-        self.sprite_source = SpriteSource(self.application, Animation(
-            self.application.load_image("_Run.png"), 10,
-            12, "default"), np.array([None, None]), 1)
-        for i in range(0, 100):
-            Sprite(self.world_space, self.sprite_source, np.array([100 * i, 100]))
 
         self.button = Engine.RenderSurface.RenderSurface(self.world_space, 1, width, height,
                                                          transfer_vector=numpy.array([0, 0]))
 
         self.button.set_filling('blue')
-        self.button.rotation_pos = numpy.array([-2, 0])
-        self.slepa = Engine.SpriteSystem.Sprite.SpriteSource(self.application, self.application.load_image("slepa.jpg"),
-                                                             np.array([None, None]), 1)
-        # self.button.angle = 100
-        self.sp = Engine.SpriteSystem.Sprite.Sprite(self.button, self.slepa,
-                                                    np.array([0, 0]))
-        # sr = pygame.transform.rotate(self.button, self.button.angle)
-        # print(current_surface, sr)
-        # print( self.button.get_rect().height * math.sin(math.radians(surface.angle)))
-        # print(sr.get_rect(topleft=(0, 0)))
-        # self.rect = Engine.BasiсObjects.Polygon(self.button)
-        # self.rect.set_geometry(0, 0, 200, 200)
+        # self.button.rotation_pos = numpy.array([-2, 0])
+        # self.slepa = Engine.SpriteSystem.Sprite.SpriteSource(self.application, self.application.load_image("slepa.jpg"),
+        #                                                      np.array([width, height]), None)
+        # # self.button.angle = 100
+        # self.sp = Engine.SpriteSystem.Sprite.Sprite(self.button, self.slepa,
+        #                                             np.array([-200, 0]))
+        # self.button.rotation_pos = numpy.array([-2, 0])
+        # self.button.set_filling('red')
 
     def uu(self):
         self.rect1.color = 'blue'
@@ -216,12 +220,12 @@ class MainScene(Engine.GameScene.GameScene):
         self.camera.set_filling((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
 
     def u3(self):
-        self.button.angle += 0.55
+        self.button.angle += 10
 
     def on_update(self, args):
+        # print(self.camera.camera_setting.tolist())
         # if "tick_length" in args:
         #     print(1000 / args["tick_length"])
-
         pass
 
 
@@ -271,7 +275,7 @@ class SecondScene(Engine.GameScene.GameScene):
                                                transfer_vector=np.array([self.width // 2, 0]),
                                                zoom_restrictions=np.array([20, 0.01]))
         self.display2.set_filling('green')
-        self.rect1 = Engine.BasiсObjects.Polygon(self.display2, color='yellow', width=3)
+        self.rect1 = Engine.BasiсObjects.Polygon(self.display2, color='blue', width=3)
         self.rect1.set_geometry(200, 200, 10, 500)
         self.circle = Engine.BasiсObjects.Circle(self.display2, [[600, 600], [800, 600]], width=10)
         # self.display.fill_color = 'green'

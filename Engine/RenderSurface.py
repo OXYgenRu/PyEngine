@@ -162,7 +162,7 @@ class RenderSurface(pygame.Surface):
         rotation_point = numpy.array(
             [self.width * self.rotation_pos[0],
              self.height * self.rotation_pos[1]])
-
+        # print(rotation_point)
         point_1 = numpy.array([self.transfer_vector[0] - rotation_point[0],
                                self.transfer_vector[1] - rotation_point[1]])
         # print(point_1)
@@ -172,6 +172,7 @@ class RenderSurface(pygame.Surface):
                                self.transfer_vector[1] + (self.height - rotation_point[1])])
         point_4 = numpy.array([self.transfer_vector[0] - rotation_point[0],
                                self.transfer_vector[1] + (self.height - rotation_point[1])])
+        # print([point_1, point_2, point_3, point_4])
         return numpy.array([point_1, point_2, point_3, point_4])
 
     def get_vectors(self) -> numpy.array:
@@ -186,6 +187,7 @@ class RenderSurface(pygame.Surface):
         vector_3 = numpy.array([vector_3[0], vector_3[1], math.sqrt(vector_3[0] ** 2 + vector_3[1] ** 2)])
         vector_4: numpy.array = rotation_point - points[3]
         vector_4 = numpy.array([vector_4[0], vector_4[1], math.sqrt(vector_4[0] ** 2 + vector_4[1] ** 2)])
+        # print([vector_1, vector_2, vector_3, vector_4])
         return numpy.array([vector_1, vector_2, vector_3, vector_4])
 
     def get_surface(self) -> tuple:
@@ -204,7 +206,7 @@ class RenderSurface(pygame.Surface):
 
         angle_4: float = math.atan2(vectors[3][1], vectors[3][0]) - math.radians(self.angle)
         vector_4: numpy.array = numpy.array([vectors[3][2] * math.cos(angle_4), vectors[3][2] * math.sin(angle_4)])
-
+        # print(math.degrees(math.atan2(vectors[3][1], vectors[3][0])))
         shift_x = -max(vector_1.tolist()[0], vector_2.tolist()[0], vector_3.tolist()[0], vector_4.tolist()[0])
         shift_y = min(-vector_1.tolist()[1], -vector_2.tolist()[1], -vector_3.tolist()[1], -vector_4.tolist()[1])
-        return shift_x, shift_y, rotated_surface
+        return numpy.array([shift_x, shift_y]), rotated_surface

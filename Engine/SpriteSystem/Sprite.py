@@ -32,11 +32,15 @@ class SpriteSource:
     def update_image(self, matrix: numpy.array):
         if self.matrix is None or matrix is None:
             self.matrix = matrix
-            self.rendered_image = surface_convertor(numpy.array([0, 0]), self.image, matrix, self.application)[1]
+            new_surface = surface_convertor(numpy.array([0, 0]), self.image, matrix, self.application)
+            if new_surface[0] is True:
+                self.rendered_image = new_surface[2]
             self.image_to_update = False
         elif matrix[8] != self.matrix[8] or self.image_to_update:
             self.matrix = matrix
-            self.rendered_image = surface_convertor(numpy.array([0, 0]), self.image, matrix, self.application)[1]
+            new_surface = surface_convertor(numpy.array([0, 0]), self.image, matrix, self.application)
+            if new_surface[0] is True:
+                self.rendered_image = new_surface[2]
             self.image_to_update = False
 
     def resize(self, size: numpy.array = None, scale=None):
@@ -62,7 +66,6 @@ class Sprite(pygame.sprite.Sprite):
         self.image = self.sprite_source.rendered_image
         self.update_collision()
         point = polygon_converter(numpy.array([self.point]), matrix)[0]
-
         if custom_surface is not None:
             custom_surface.blit(self.image, point.tolist())
         else:

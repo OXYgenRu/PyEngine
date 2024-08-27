@@ -3,6 +3,7 @@ import os
 import sys
 from collections import defaultdict
 
+import numpy
 import pygame
 import Engine
 import Engine.constants as cs
@@ -47,7 +48,7 @@ class Game:
         running = True
         self.load_fonts()
         self.set_new_scene(self.start_scene_id)
-
+        numpy.set_printoptions(precision=2, floatmode='fixed')
         self.screen.fill((0, 0, 0))
 
         while running:

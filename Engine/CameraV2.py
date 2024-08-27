@@ -7,7 +7,7 @@ import shapely
 import Engine.RenderSurface
 
 import Engine.constants as cs
-from Engine.tools import scale_image, render_surface_convertor, surface_convertor
+from Engine.tools import scale_image, render_surface_convertor, surface_convertor, rect_intersection, polygon_converter
 import numpy as np
 
 
@@ -32,10 +32,22 @@ class Camera(Engine.RenderSurface.RenderSurface):
         self.camera_setting = camera_setting.copy()
         self.connected_surface.set_visible_off()
         self.connected_surface.disable_ui_colliders()
+        self.camera_polygon = []
 
     def render(self):
         if self.properties.get(cs.P_HIDED):
             return
+        width = self.width / self.camera_setting[2] / 2
+        height = self.height / self.camera_setting[2] / 2
+        self.camera_polygon = numpy.array(
+            [[-self.camera_setting[0] + self.width // 2 - width - 10,
+              -self.camera_setting[1] + self.height // 2 - height - 10],
+             [-self.camera_setting[0] + self.width // 2 + width + 10,
+              -self.camera_setting[1] + self.height // 2 - height - 10],
+             [-self.camera_setting[0] + self.width // 2 + width + 10,
+              -self.camera_setting[1] + self.height // 2 + height + 10],
+             [-self.camera_setting[0] + self.width // 2 - width - 10,
+              -self.camera_setting[1] + self.height // 2 + height + 10]])
         matrix = [0, 0, self.width * self.camera_setting[2], self.width, self.height * self.camera_setting[2],
                   self.height, self.camera_setting[0] * self.camera_setting[2],
                   self.camera_setting[1] * self.camera_setting[2], self.camera_setting[2]]
@@ -46,11 +58,12 @@ class Camera(Engine.RenderSurface.RenderSurface):
             for surface in self.connected_surface.surfaces[surface_priority]:
                 surface.render()
                 rotated_surface = surface.get_surface()
-                current_surface = surface_convertor(surface.transfer_vector, rotated_surface[2], matrix,
-                                                    self.application)
-                surfaces_to_bake_list.append(
-                    (current_surface[1], (current_surface[0][0] + rotated_surface[0] * self.camera_setting[2],
-                                          current_surface[0][1] + rotated_surface[1] * self.camera_setting[2])))
+                current_surface = self.surface_culling(surface.transfer_vector + rotated_surface[0], rotated_surface[1],
+                                                       matrix)
+                if current_surface[0] is True:
+                    surfaces_to_bake_list.append(
+                        (current_surface[2], (current_surface[1][0],
+                                              current_surface[1][1])))
         self.blits(surfaces_to_bake_list)
 
     def clear_surface(self):
@@ -123,4 +136,39 @@ class Camera(Engine.RenderSurface.RenderSurface):
             if flag is True:
                 return True
         return False
-    # def
+
+    def surface_culling(self, point, surface, matrix) -> list:
+        if matrix is not None:
+            surface_rect: pygame.Rect = surface.get_rect()
+            surface_polygon: numpy.array = numpy.array([point, [point[0] + surface_rect.width, point[1]],
+                                                        [point[0] + surface_rect.width, point[1] + surface_rect.height],
+                                                        [point[0], point[1] + surface_rect.height]])
+            intersection = rect_intersection(surface_polygon, self.camera_polygon)
+            if not intersection[0]:
+                return [False]
+            subsurface_polygon = intersection[1] - surface_polygon[0]
+            listed_subsurface_polygon = subsurface_polygon.tolist()
+            sub_surface_rect = pygame.Rect(listed_subsurface_polygon[0][0], listed_subsurface_polygon[0][1],
+                                           math.ceil(listed_subsurface_polygon[1][0] - listed_subsurface_polygon[0][0]),
+                                           math.ceil(listed_subsurface_polygon[2][1] - listed_subsurface_polygon[1][1]))
+
+            sub_surface = None
+            transfer_vector = numpy.array([sub_surface_rect.x + point[0], point[1] + sub_surface_rect.y])
+            new_vector = polygon_converter(numpy.array([transfer_vector]), matrix)
+            if np.array_equal(intersection[1], surface_polygon):
+                sub_surface = surface
+            else:
+                sub_surface = surface.subsurface(sub_surface_rect)
+
+            new_surface_rect = polygon_converter(numpy.array([[0, 0], [sub_surface_rect.w, sub_surface_rect.h]]),
+                                                 matrix)
+            new_size = new_surface_rect[1] - new_surface_rect[0] + 1
+
+            finish_surface = scale_image(self.application, sub_surface,
+                                         np.ceil(new_size),
+                                         None)
+            return [True,
+                    new_vector[0],
+                    finish_surface]
+        else:
+            return [True, point, surface]

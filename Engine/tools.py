@@ -48,20 +48,57 @@ def scale_image(application, pygame_image, new_size: numpy.array = None, scale=N
             return scaled_image
 
 
-def surface_convertor(point, surface, matrix: numpy.array = None, application=None) -> tuple:
+def surface_convertor(point: numpy.array, surface, matrix: numpy.array = None,
+                      application=None):
     if matrix is not None:
-        point1 = point
+        camera_polygon = numpy.array(
+            [[-matrix[6] / matrix[8] + matrix[3] // 2 - matrix[3] / matrix[8] / 2 - 10,
+              -matrix[7] / matrix[8] + matrix[5] // 2 - matrix[5] / matrix[8] / 2 - 10],
+             [-matrix[6] / matrix[8] + matrix[3] // 2 + matrix[3] / matrix[8] / 2 + 10,
+              -matrix[7] / matrix[8] + matrix[5] // 2 - matrix[5] / matrix[8] / 2 - 10],
+             [-matrix[6] / matrix[8] + matrix[3] // 2 + matrix[3] / matrix[8] / 2 + 10,
+              -matrix[7] / matrix[8] + matrix[5] // 2 + matrix[5] / matrix[8] / 2 + 10],
+             [-matrix[6] / matrix[8] + matrix[3] // 2 - matrix[3] / matrix[8] / 2 - 10,
+              -matrix[7] / matrix[8] + matrix[5] // 2 + matrix[5] / matrix[8] / 2 + 10]])
         width = surface.get_rect().width
         height = surface.get_rect().height
+        point1: numpy.array = point
         point2 = point1 + numpy.array([width, 0])
         point3 = point1 + numpy.array([width, height])
         point4 = point1 + numpy.array([0, height])
         polygon = numpy.array([point1, point2, point3, point4])
-        new_polygon = polygon_converter(polygon, matrix)
+        intersection = rect_intersection(polygon, camera_polygon)
+        if not intersection[0]:
+            return False, 0
+        print(matrix)
+
+        sub_polygon = (intersection[1] - polygon[0])
+        # intersection[0]
+        new_polygon = polygon_converter(intersection[1], matrix)
         new_size = new_polygon[2] - new_polygon[0]
-        return new_polygon[0], scale_image(application, surface, new_size, None)
+        wd = (sub_polygon[1] - sub_polygon[0]).tolist()[0]
+        hd = (sub_polygon[2] - sub_polygon[1]).tolist()[1]
+        # print(sub_polygon[0])
+        new_polygon[0] -= (sub_polygon[0]) % 1 * matrix[8]
+        # sub_polygon -= new_polygon[0] % 1
+
+        rect = pygame.Rect(sub_polygon[0].tolist()[0], sub_polygon[0].tolist()[1], wd, hd)
+        return True, new_polygon[0], scale_image(application, surface.subsurface(rect),
+                                                 new_size,
+                                                 None)
     else:
-        return point, surface
+        return True, point, surface
+
+
+def rect_intersection(surface_polygon: numpy.array, camera_polygon: numpy.array):
+    x_left = max(surface_polygon[0][0], camera_polygon[0][0])
+    y_top = max(surface_polygon[0][1], camera_polygon[0][1])
+    x_right = min(surface_polygon[1][0], camera_polygon[1][0])
+    y_bottom = min(surface_polygon[2][1], camera_polygon[2][1])
+    if x_left < x_right and y_top < y_bottom:
+        return True, numpy.array([[x_left, y_top], [x_right, y_top], [x_right, y_bottom], [x_left, y_bottom]])
+    else:
+        return False, numpy.array([])
 
 
 def render_surface_convertor(surface, matrix: numpy.array = None) -> tuple:
@@ -86,7 +123,7 @@ def render_surface_convertor(surface, matrix: numpy.array = None) -> tuple:
 
 def polygon_converter(points, matrix=None) -> numpy.array:
     camera_matrix = numpy.array(
-        [[1, 0], [0, 1], [-0.5, 0], [0.5, 0], [0, -0.5], [0, 0.5], [1, 0], [0, 1], [0, 0]])
+        [[1, 0], [0, 1], [-0.5, 0], [0.5, 0], [0, -0.5], [0, 0.5], [1, 0], [0, 1], [0, 0]], dtype=float)
     if matrix is not None:
         new_points = numpy.empty(len(points), object)
         for i in range(len(points)):
@@ -94,6 +131,7 @@ def polygon_converter(points, matrix=None) -> numpy.array:
             matrix[0] = points[i][0] * matrix[8]
             matrix[1] = points[i][1] * matrix[8]
             new_points[i] = numpy.dot(matrix, camera_matrix)
+
         return new_points
     else:
         return points

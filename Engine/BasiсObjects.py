@@ -2,6 +2,7 @@ import os
 import sys
 
 import numpy
+import numpy as np
 import pygame
 import shapely
 
@@ -36,7 +37,6 @@ class Polygon(Shape):
             width = self.width * matrix[8]
         if self.width != 0:
             width = max(1, width)
-        # shapely.Polygon.intersection()
         if custom_surface is not None:
             pygame.draw.polygon(custom_surface, self.color, new_points.tolist(), int(width))
         else:
@@ -44,7 +44,7 @@ class Polygon(Shape):
 
     def set_geometry(self, x1, y1, x2, y2):
         self.points = numpy.array(
-            [[x1, y1], [x2 + x1, y1], [x2 + x1, y2 + y1], [x1, y2 + y1]])
+            [[x1, y1], [x2 + x1 - 1, y1], [x2 + x1 - 1, y2 + y1 - 1], [x1, y2 + y1 - 1]])
 
 
 class Circle(Shape):
@@ -63,6 +63,7 @@ class Circle(Shape):
             width = self.width * matrix[8]
         if self.width != 0:
             width = max(1, width)
+
         if custom_surface is not None:
             pygame.draw.circle(custom_surface, self.color, new_points[0], new_points[1][0] - new_points[0][0],
                                int(width))
@@ -86,7 +87,8 @@ class Text(Shape):
     def render(self, matrix: numpy.array = None, custom_surface=None):
         text_surface = self.render_surface.application.font_storage[self.font_id].render(self.text, True, self.color)
         surface = surface_convertor(self.points, text_surface, matrix, self.render_surface.application)
-        if custom_surface is not None:
-            custom_surface.blit(surface[1], surface[0].tolist())
-        else:
-            self.render_surface.blit(surface[1], surface[0].tolist())
+        if surface[0] is True:
+            if custom_surface is not None:
+                custom_surface.blit(surface[2], surface[1].tolist())
+            else:
+                self.render_surface.blit(surface[2], surface[1].tolist())
