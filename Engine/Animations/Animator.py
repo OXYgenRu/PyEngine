@@ -124,13 +124,13 @@ class Animator:
     def add_animation(self, animation):
         self.animations[animation.animation_id] = animation
 
-    def update(self, args):
-        if cs.E_EVENT in args:
-            if args[cs.E_EVENT].type == pygame.USEREVENT + self.stop_animation_event:
-                self.application.delete_timer(self.stop_animation_event)
-                self.animation_finished(cs.A_STOP_TIMER_EVENT)
-        if cs.E_CLOSING_EVENT in args:
-            self.updated = False
+    def update(self, events_list):
+        for event in events_list:
+            if event[0] == cs.E_EVENT:
+                if event[1].type == pygame.USEREVENT + self.stop_animation_event:
+                    self.application.delete_timer(self.stop_animation_event)
+                    self.animation_finished(cs.A_STOP_TIMER_EVENT)
+        self.updated = False
 
     def animation_finished(self, cause):
         self.load_default_animation()

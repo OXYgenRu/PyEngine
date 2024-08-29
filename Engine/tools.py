@@ -48,44 +48,19 @@ def scale_image(application, pygame_image, new_size: numpy.array = None, scale=N
             return scaled_image
 
 
-def surface_convertor(point: numpy.array, surface, matrix: numpy.array = None,
-                      application=None):
+def surface_convertor(point, surface, matrix: numpy.array = None, application=None):
     if matrix is not None:
-        camera_polygon = numpy.array(
-            [[-matrix[6] / matrix[8] + matrix[3] // 2 - matrix[3] / matrix[8] / 2 - 10,
-              -matrix[7] / matrix[8] + matrix[5] // 2 - matrix[5] / matrix[8] / 2 - 10],
-             [-matrix[6] / matrix[8] + matrix[3] // 2 + matrix[3] / matrix[8] / 2 + 10,
-              -matrix[7] / matrix[8] + matrix[5] // 2 - matrix[5] / matrix[8] / 2 - 10],
-             [-matrix[6] / matrix[8] + matrix[3] // 2 + matrix[3] / matrix[8] / 2 + 10,
-              -matrix[7] / matrix[8] + matrix[5] // 2 + matrix[5] / matrix[8] / 2 + 10],
-             [-matrix[6] / matrix[8] + matrix[3] // 2 - matrix[3] / matrix[8] / 2 - 10,
-              -matrix[7] / matrix[8] + matrix[5] // 2 + matrix[5] / matrix[8] / 2 + 10]])
+        point1 = point
         width = surface.get_rect().width
         height = surface.get_rect().height
-        point1: numpy.array = point
         point2 = point1 + numpy.array([width, 0])
         point3 = point1 + numpy.array([width, height])
         point4 = point1 + numpy.array([0, height])
         polygon = numpy.array([point1, point2, point3, point4])
-        intersection = rect_intersection(polygon, camera_polygon)
-        if not intersection[0]:
-            return False, 0
-        print(matrix)
-
-        sub_polygon = (intersection[1] - polygon[0])
-        # intersection[0]
-        new_polygon = polygon_converter(intersection[1], matrix)
+        new_polygon = polygon_converter(polygon, matrix)
         new_size = new_polygon[2] - new_polygon[0]
-        wd = (sub_polygon[1] - sub_polygon[0]).tolist()[0]
-        hd = (sub_polygon[2] - sub_polygon[1]).tolist()[1]
-        # print(sub_polygon[0])
-        new_polygon[0] -= (sub_polygon[0]) % 1 * matrix[8]
-        # sub_polygon -= new_polygon[0] % 1
+        return True, new_polygon[0], scale_image(application, surface, new_size, None)
 
-        rect = pygame.Rect(sub_polygon[0].tolist()[0], sub_polygon[0].tolist()[1], wd, hd)
-        return True, new_polygon[0], scale_image(application, surface.subsurface(rect),
-                                                 new_size,
-                                                 None)
     else:
         return True, point, surface
 

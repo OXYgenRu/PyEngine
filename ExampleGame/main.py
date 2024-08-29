@@ -179,36 +179,28 @@ class RunLeftState(State):
 class MainScene(Engine.GameScene.GameScene):
     def __init__(self, width, height, application):
         super().__init__(width=width, height=height, application=application)
-        # self.world_space.hide()
 
-        self.rect1 = Engine.BasiсObjects.Polygon(self.world_space, color='red', width=0)
-        self.rect1.set_geometry(width * 2, 0, width, height)
-        self.collider = UICollider(self.world_space, self.rect1.points)
-        self.collider.on_mouse_enter = self.uu
-        self.collider.on_mouse_exit = self.uu1
-        self.collider.on_mouse_down = self.uu2
-        self.collider.on_mouse_over = self.u3
         self.fps_meter = FPSMeter(self.screen_space, 2, 50, 25)
-        # self.fps_meter.add_border()
+
         self.camera = Engine.CameraV2.Camera(self.world_space, parent_surface=self.screen_space, render_priority=0,
                                              width=width,
                                              height=height)
-        # self.camera.camera_setting[2] = 1
+        self.text = Engine.BasiсObjects.Text(self.screen_space, np.array([0, 0]), "rrr")
         self.world_space.set_filling('yellow')
         self.camera.set_filling('yellow')
+        self.slepa = Engine.SpriteSystem.Sprite.SpriteSource(self.application, self.application.load_image("slepa.jpg"),
+                                                             np.array([50, 50]), None)
 
-        self.button = Engine.RenderSurface.RenderSurface(self.world_space, 1, width, height,
-                                                         transfer_vector=numpy.array([0, 0]))
+        for i in range(0, 100):
+            for j in range(0, 100):
+                # new_surface = Engine.RenderSurface.RenderSurface(self.world_space, 0, 50, 50,
+                #                                                  np.array([i * 60, j * 60]))
+                # new_surface.set_filling('green')
+                # new_surface.test = 0
 
-        self.button.set_filling('blue')
-        # self.button.rotation_pos = numpy.array([-2, 0])
-        # self.slepa = Engine.SpriteSystem.Sprite.SpriteSource(self.application, self.application.load_image("slepa.jpg"),
-        #                                                      np.array([width, height]), None)
-        # # self.button.angle = 100
-        # self.sp = Engine.SpriteSystem.Sprite.Sprite(self.button, self.slepa,
-        #                                             np.array([-200, 0]))
-        # self.button.rotation_pos = numpy.array([-2, 0])
-        # self.button.set_filling('red')
+                # self.button.rotation_pos = numpy.array([-2, 0])
+
+                Engine.SpriteSystem.Sprite.Sprite(self.world_space, self.slepa, np.array([i * 60, j * 60]))
 
     def uu(self):
         self.rect1.color = 'blue'

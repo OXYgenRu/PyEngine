@@ -17,17 +17,17 @@ class SpriteSource:
         self.matrix = None
         self.image_to_update = True
 
-    def update(self, args):
-        self.animator.update(args)
-        if cs.E_EVENT in args:
-            if pygame.USEREVENT + self.animator.event_number == args[cs.E_EVENT].type:
-                self.image = self.animator.get_frame()
-                self.image_to_update = True
-            if cs.E_START_NEW_ANIMATION == args[cs.E_EVENT].type:
-                self.image = self.animator.get_frame()
-                self.image_to_update = True
-        if cs.E_CLOSING_EVENT in args:
-            self.image_to_update = True
+    def update(self, event_list):
+        self.animator.update(event_list)
+        for event in event_list:
+            if event[0] == cs.E_EVENT:
+                if pygame.USEREVENT + self.animator.event_number == event[1].type:
+                    self.image = self.animator.get_frame()
+                    self.image_to_update = True
+                if cs.E_START_NEW_ANIMATION == event[1].type:
+                    self.image = self.animator.get_frame()
+                    self.image_to_update = True
+        self.image_to_update = True
 
     def update_image(self, matrix: numpy.array):
         if self.matrix is None or matrix is None:
@@ -74,9 +74,9 @@ class Sprite(pygame.sprite.Sprite):
     def resize(self, size: numpy.array = None, scale=None):
         self.sprite_source.resize(size, scale)
 
-    def update(self, args):
-        self.sprite_source.update(args)
-        self.on_update(args)
+    def update(self, event_list):
+        self.sprite_source.update(event_list)
+        self.on_update(event_list)
 
     def on_update(self, args):
         pass

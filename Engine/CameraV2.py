@@ -37,6 +37,7 @@ class Camera(Engine.RenderSurface.RenderSurface):
     def render(self):
         if self.properties.get(cs.P_HIDED):
             return
+        self.fill(self.fill_color)
         width = self.width / self.camera_setting[2] / 2
         height = self.height / self.camera_setting[2] / 2
         self.camera_polygon = numpy.array(
@@ -54,51 +55,50 @@ class Camera(Engine.RenderSurface.RenderSurface):
         for shape in self.connected_surface.content:
             shape.render(numpy.array(matrix), self)
         surfaces_to_bake_list = []
+        cnt = 0
         for surface_priority in self.connected_surface.surfaces_priorities:
             for surface in self.connected_surface.surfaces[surface_priority]:
-                surface.render()
-                rotated_surface = surface.get_surface()
-                current_surface = self.surface_culling(surface.transfer_vector + rotated_surface[0], rotated_surface[1],
-                                                       matrix)
-                if current_surface[0] is True:
-                    surfaces_to_bake_list.append(
-                        (current_surface[2], (current_surface[1][0],
-                                              current_surface[1][1])))
+                if self.inter(surface.transfer_vector, surface):
+                    surface.render()
+                    cnt += 1
+                    rotated_surface = surface.get_surface()
+                    current_surface = self.surface_culling(surface.transfer_vector + rotated_surface[0],
+                                                           rotated_surface[1],
+                                                           matrix)
+                    if current_surface[0] is True:
+                        surfaces_to_bake_list.append(
+                            (current_surface[2], (current_surface[1][0],
+                                                  current_surface[1][1])))
+        # print(cnt)
         self.blits(surfaces_to_bake_list)
 
-    def clear_surface(self):
-        self.fill(self.fill_color)
-        for surface_priority in self.connected_surface.surfaces_priorities:
-            for surface in self.connected_surface.surfaces[surface_priority]:
-                surface.clear_surface()
+    def on_update(self, events_list):
+        self.camera_motion(events_list)
 
-    def on_update(self, args):
-        if cs.E_EVENT in args:
-            event = args[cs.E_EVENT]
-            self.camera_motion(event)
-
-    def camera_motion(self, event):
+    def camera_motion(self, events_list):
         if self.properties.get("locked"):
             return
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
-            self.start_pos = event.pos
-            self.moving = True
-        if event.type == pygame.MOUSEBUTTONUP and event.button == 2:
-            self.camera_setting[0] += (event.pos[0] - self.start_pos[0]) / self.camera_setting[2]
-            self.camera_setting[1] += (event.pos[1] - self.start_pos[1]) / self.camera_setting[2]
-            self.moving = False
-        if event.type == pygame.MOUSEWHEEL:
-            if event.y > 0:
-                self.camera_setting[2] = self.camera_setting[2] * self.camera_setting[3]
-            else:
-                self.camera_setting[2] /= self.camera_setting[3]
-            if self.zoom_restrictions is not None:
-                self.camera_setting[2] = max(self.camera_setting[2], self.zoom_restrictions[1])
-                self.camera_setting[2] = min(self.camera_setting[2], self.zoom_restrictions[0])
-        if event.type == pygame.MOUSEMOTION and self.moving is True:
-            self.camera_setting[0] += (event.pos[0] - self.start_pos[0]) / self.camera_setting[2]
-            self.camera_setting[1] += (event.pos[1] - self.start_pos[1]) / self.camera_setting[2]
-            self.start_pos = event.pos
+        for event in events_list:
+            if event[0] == cs.E_EVENT:
+                if event[1].type == pygame.MOUSEBUTTONDOWN and event[1].button == 2:
+                    self.start_pos = event[1].pos
+                    self.moving = True
+                if event[1].type == pygame.MOUSEBUTTONUP and event[1].button == 2:
+                    self.camera_setting[0] += (event[1].pos[0] - self.start_pos[0]) / self.camera_setting[2]
+                    self.camera_setting[1] += (event[1].pos[1] - self.start_pos[1]) / self.camera_setting[2]
+                    self.moving = False
+                if event[1].type == pygame.MOUSEWHEEL:
+                    if event[1].y > 0:
+                        self.camera_setting[2] = self.camera_setting[2] * self.camera_setting[3]
+                    else:
+                        self.camera_setting[2] /= self.camera_setting[3]
+                    if self.zoom_restrictions is not None:
+                        self.camera_setting[2] = max(self.camera_setting[2], self.zoom_restrictions[1])
+                        self.camera_setting[2] = min(self.camera_setting[2], self.zoom_restrictions[0])
+                if event[1].type == pygame.MOUSEMOTION and self.moving is True:
+                    self.camera_setting[0] += (event[1].pos[0] - self.start_pos[0]) / self.camera_setting[2]
+                    self.camera_setting[1] += (event[1].pos[1] - self.start_pos[1]) / self.camera_setting[2]
+                    self.start_pos = event[1].pos
 
     def set_settings(self, x_pos=None, y_pos=None, zoom=None, zoom_sensitivity=None):
         if x_pos is not None:
@@ -148,21 +148,24 @@ class Camera(Engine.RenderSurface.RenderSurface):
                 return [False]
             subsurface_polygon = intersection[1] - surface_polygon[0]
             listed_subsurface_polygon = subsurface_polygon.tolist()
+
             sub_surface_rect = pygame.Rect(listed_subsurface_polygon[0][0], listed_subsurface_polygon[0][1],
-                                           math.ceil(listed_subsurface_polygon[1][0] - listed_subsurface_polygon[0][0]),
-                                           math.ceil(listed_subsurface_polygon[2][1] - listed_subsurface_polygon[1][1]))
+                                           math.floor(
+                                               listed_subsurface_polygon[1][0] - listed_subsurface_polygon[0][0]),
+                                           math.floor(
+                                               listed_subsurface_polygon[2][1] - listed_subsurface_polygon[1][1]))
 
             sub_surface = None
-            transfer_vector = numpy.array([sub_surface_rect.x + point[0], point[1] + sub_surface_rect.y])
-            new_vector = polygon_converter(numpy.array([transfer_vector]), matrix)
+            vector = numpy.array([sub_surface_rect.x + point[0], point[1] + sub_surface_rect.y])
+            new_vector = polygon_converter(numpy.array([vector]), matrix)
+
             if np.array_equal(intersection[1], surface_polygon):
                 sub_surface = surface
             else:
                 sub_surface = surface.subsurface(sub_surface_rect)
-
-            new_surface_rect = polygon_converter(numpy.array([[0, 0], [sub_surface_rect.w, sub_surface_rect.h]]),
-                                                 matrix)
-            new_size = new_surface_rect[1] - new_surface_rect[0] + 1
+            size = numpy.array([[0, 0], [sub_surface_rect.w, sub_surface_rect.h]])
+            ss = polygon_converter(size, matrix)
+            new_size = ss[1] - ss[0] + 1
 
             finish_surface = scale_image(self.application, sub_surface,
                                          np.ceil(new_size),
@@ -172,3 +175,14 @@ class Camera(Engine.RenderSurface.RenderSurface):
                     finish_surface]
         else:
             return [True, point, surface]
+
+    def inter(self, point, surface):
+        surface_rect: pygame.Rect = surface.get_rect()
+        surface_polygon: numpy.array = numpy.array([point, [point[0] + surface_rect.width, point[1]],
+                                                    [point[0] + surface_rect.width, point[1] + surface_rect.height],
+                                                    [point[0], point[1] + surface_rect.height]])
+        intersection = rect_intersection(surface_polygon, self.camera_polygon)
+        if not intersection[0]:
+            return False
+        else:
+            return True

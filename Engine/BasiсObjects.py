@@ -87,6 +87,7 @@ class Text(Shape):
     def render(self, matrix: numpy.array = None, custom_surface=None):
         text_surface = self.render_surface.application.font_storage[self.font_id].render(self.text, True, self.color)
         surface = surface_convertor(self.points, text_surface, matrix, self.render_surface.application)
+        # print(matrix)
         if surface[0] is True:
             if custom_surface is not None:
                 custom_surface.blit(surface[2], surface[1].tolist())

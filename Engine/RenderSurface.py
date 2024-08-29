@@ -40,7 +40,7 @@ class RenderSurface(pygame.Surface):
         self.set_visible_on()
 
         self.colliders = []
-
+        self.test = 1
         # числа от 0 до 1, для получения координаты умножить на длину и высоту
         self.rotation_pos = numpy.array([0, 0])
 
@@ -69,6 +69,8 @@ class RenderSurface(pygame.Surface):
     def render(self):
         if self.properties.get(cs.P_HIDED):
             return
+        if self.test:
+            self.fill(self.fill_color)
         for shape in self.content:
             shape.render()
         surfaces_to_bake_list = []
@@ -79,19 +81,10 @@ class RenderSurface(pygame.Surface):
                     (pygame.transform.rotate(surface, surface.angle), tuple(surface.transfer_vector)))
         self.blits(surfaces_to_bake_list)
 
-    def clear_surface(self):
-        if self.properties.get(cs.P_HIDED):
-            return
-        self.fill(self.fill_color)
-        for surface_priority in self.surfaces_priorities:
-            for surface in self.surfaces[surface_priority]:
-                surface.clear_surface()
-
     def set_filling(self, color):
         self.fill_color = color
 
     def add_border(self, color='red'):
-
         self.border = Engine.BasiсObjects.Polygon(self, numpy.array(
             [[0, 0], [self.width - 2, 0], [self.width - 2, self.height - 2], [0, self.height - 2]]), color, 2)
 
@@ -119,16 +112,16 @@ class RenderSurface(pygame.Surface):
     def enable_ui_colliders(self):
         self.properties.update(cs.P_UI_COLLIDERS, False)
 
-    def update(self, args):
+    def update(self, event_list):
         if self.properties.get(cs.P_UPDATABLE):
             return
 
-        self.on_update(args)
+        self.on_update(event_list)
         for element in self.updating_content:
-            element.update(args)
+            element.update(event_list)
         for surface_priority in self.surfaces_priorities:
             for surface in self.surfaces[surface_priority]:
-                surface.update(args)
+                surface.update(event_list)
 
     def on_update(self, args):
         pass
@@ -156,8 +149,6 @@ class RenderSurface(pygame.Surface):
                 return True
         return False
 
-    # def get_points(self):
-    #     numpy
     def get_points(self) -> numpy.array:
         rotation_point = numpy.array(
             [self.width * self.rotation_pos[0],

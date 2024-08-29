@@ -1,6 +1,7 @@
 import inspect
 import os
 import sys
+import time
 from collections import defaultdict
 
 import numpy
@@ -48,22 +49,21 @@ class Game:
         running = True
         self.load_fonts()
         self.set_new_scene(self.start_scene_id)
-        numpy.set_printoptions(precision=2, floatmode='fixed')
         self.screen.fill((0, 0, 0))
-
         while running:
+            events = []
             tick_length = self.clock.tick(self.fps)
             self.screen.fill((0, 0, 0))
-            self.scene.clear_surface()
-            pressed_buttons = pygame.key.get_pressed()
+            events.append((cs.E_PRESSED_BUTTONS, pygame.key.get_pressed()))
+            events.append((cs.E_TICK_LENGTH, tick_length))
             for event in pygame.event.get():
-                self.scene.update({cs.E_EVENT: event, cs.E_PRESSED_BUTTONS: pressed_buttons})
-                self.ui_collider_system.update(event)
                 if event.type == pygame.QUIT:
                     running = False
+                self.ui_collider_system.update(event)
+                events.append((cs.E_EVENT, event))
+            events.append((cs.E_CLOSING_EVENT, cs.E_CLOSING_EVENT))
+            self.scene.update(events)
             self.ui_collider_system.update_colliders()
-            self.scene.update({cs.E_TICK_LENGTH: tick_length})
-            self.scene.update({cs.E_CLOSING_EVENT: cs.E_CLOSING_EVENT})
             self.scene.render()
             self.screen.blit(self.scene, (0, 0))
             pygame.display.flip()
