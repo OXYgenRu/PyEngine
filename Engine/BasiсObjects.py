@@ -6,6 +6,7 @@ import numpy as np
 import pygame
 import shapely
 
+from Engine.RenderSystem.RenderInput import RenderInput
 from Engine.tools import scale_image, polygon_converter, render_surface_convertor, surface_convertor
 
 
@@ -13,7 +14,7 @@ class Shape:
     def __init__(self):
         self.points = numpy.array([])
 
-    def update(self, args):
+    def update(self, args, event_id):
         pass
 
     def move(self, transfer_vector: numpy.array):
@@ -21,55 +22,35 @@ class Shape:
 
 
 class Polygon(Shape):
-    def __init__(self, render_surface, points: numpy.array = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0]]), color='red',
+    def __init__(self, coords_system, points: numpy.array = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0]], float),
+                 color='red',
                  width=0):
         super().__init__()
-        self.render_surface = render_surface
+        self.coords_system = coords_system
         self.points = points
         self.color = color
         self.width = width
-        self.render_surface.add_content(self)
+        self.coords_system.add_content(self)
 
-    def render(self, matrix: numpy.array = None, custom_surface=None):
-        new_points = polygon_converter(self.points, matrix)
-        width = self.width
-        if matrix is not None:
-            width = self.width * matrix[8]
-        if self.width != 0:
-            width = max(1, width)
-        if custom_surface is not None:
-            pygame.draw.polygon(custom_surface, self.color, new_points.tolist(), int(width))
-        else:
-            pygame.draw.polygon(self.render_surface, self.color, new_points.tolist(), int(width))
+    def render(self, surface, angle, position):
+        self.coords_system.application.render_input.draw_polygon(surface, self.points, position, angle, self.color)
 
     def set_geometry(self, x1, y1, x2, y2):
         self.points = numpy.array(
-            [[x1, y1], [x2 + x1 - 1, y1], [x2 + x1 - 1, y2 + y1 - 1], [x1, y2 + y1 - 1]])
+            [[x1, y1], [x2 + x1 - 1, y1], [x2 + x1 - 1, y2 + y1 - 1], [x1, y2 + y1 - 1]], float)
 
 
 class Circle(Shape):
-    def __init__(self, render_surface, points: numpy.array, color='red', width=0):
+    def __init__(self, coords_system, points: numpy.array, color='red', width=0):
         super().__init__()
-        self.render_surface = render_surface
+        self.coords_system = coords_system
         self.points = points
         self.color = color
         self.width = width
-        self.render_surface.add_content(self)
+        self.coords_system.add_content(self)
 
-    def render(self, matrix: numpy.array = None, custom_surface=None):
-        new_points = polygon_converter(self.points, matrix)
-        width = self.width
-        if matrix is not None:
-            width = self.width * matrix[8]
-        if self.width != 0:
-            width = max(1, width)
-
-        if custom_surface is not None:
-            pygame.draw.circle(custom_surface, self.color, new_points[0], new_points[1][0] - new_points[0][0],
-                               int(width))
-        else:
-            pygame.draw.circle(self.render_surface, self.color, new_points[0], new_points[1][0] - new_points[0][0],
-                               int(width))
+    def render(self, surface, angle, position):
+        self.coords_system.application.render_input.draw_circle(surface, self.points, position, angle, self.color)
 
 
 class Text(Shape):

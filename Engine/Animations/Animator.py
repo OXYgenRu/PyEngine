@@ -52,9 +52,11 @@ class Animator:
     def get_frame(self):
         if self.updated is True:
             return self.get_current_frame()
+
         self.updated = True
         if self.end_of_animation:
             self.animation_finished(cs.A_STOP_TIMER_EVENT)
+        # print(2)
         frame = self.original_frames[self.current_frame_id]
         frame_index = self.current_frame_id
         if self.current_frame_id == self.frames_cnt - 1 and self.playing_cnt >= 1:
@@ -124,10 +126,13 @@ class Animator:
     def add_animation(self, animation):
         self.animations[animation.animation_id] = animation
 
-    def update(self, events_list):
+    def update(self, events_list, event_id):
+        # print(1)
         for event in events_list:
             if event[0] == cs.E_EVENT:
+                # print(1)
                 if event[1].type == pygame.USEREVENT + self.stop_animation_event:
+                    # print(1)
                     self.application.delete_timer(self.stop_animation_event)
                     self.animation_finished(cs.A_STOP_TIMER_EVENT)
         self.updated = False

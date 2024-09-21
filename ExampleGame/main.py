@@ -13,14 +13,17 @@ import Engine.GameScene
 import Engine.constants as cs
 import Engine.SpriteSystem.MergedSprites
 import Engine.SpriteSystem.SingleSprites
+
 import Engine.Camera
 from Engine.Animations.Animation import Animation
 import Engine.StateMachine.StateMachine
+from Engine.CoordsSystem import CoordsSystem
 from Engine.StateMachine.State import State
 import Engine.CameraV2
 from Engine.Colliders.UICollider import UICollider
 from Engine.SpriteSystem.Sprite import Sprite, SpriteSource
 from ExampleGame.start_scene import Menu
+from Engine.CameraV3 import Camera
 
 
 class FPSMeter(Engine.RenderSurface.RenderSurface):
@@ -29,10 +32,10 @@ class FPSMeter(Engine.RenderSurface.RenderSurface):
         super().__init__(parent_surface, render_priority, width, height, transfer_vector)
         self.fps = Engine.BasiсObjects.Text(self, np.array([0, 0]), "0", color='green')
 
-    def on_update(self, args):
-        # print(1)
-        if cs.E_TICK_LENGTH in args:
-            self.fps.text = str(1000 / args[cs.E_TICK_LENGTH])
+    def on_update(self, event_list, event_id):
+        for event in event_list:
+            if event[0] == cs.E_TICK_LENGTH:
+                self.fps.text = str(1000 / event[1])
 
 
 class DefaultRight(State):
@@ -156,7 +159,7 @@ class RunLeftState(State):
         super().__init__(state_id)
 
     def on_load(self, args):
-        # self.render_surface.sp1.animator.symmetrically_y = True
+        # self.coords_system.sp1.animator.symmetrically_y = True
         self.render_surface.sp1.animator.load_animation("run_right")
         self.render_surface.sp1.animator.set_setting(symmetrically_y=True)
 
@@ -188,19 +191,20 @@ class MainScene(Engine.GameScene.GameScene):
         self.text = Engine.BasiсObjects.Text(self.screen_space, np.array([0, 0]), "rrr")
         self.world_space.set_filling('yellow')
         self.camera.set_filling('yellow')
-        self.slepa = Engine.SpriteSystem.Sprite.SpriteSource(self.application, self.application.load_image("slepa.jpg"),
-                                                             np.array([50, 50]), None)
+        self.an = Animation(self.application.load_image("_Idle.png", None), 10, 4, "default1")
+        self.slepa = Engine.SpriteSystem.Sprite.SpriteSource(self.application, self.an,
+                                                             np.array([None, None]), 1)
 
-        for i in range(0, 100):
-            for j in range(0, 100):
+        for i in range(0, 50):
+            for j in range(0, 50):
                 # new_surface = Engine.RenderSurface.RenderSurface(self.world_space, 0, 50, 50,
                 #                                                  np.array([i * 60, j * 60]))
                 # new_surface.set_filling('green')
                 # new_surface.test = 0
 
-                # self.button.rotation_pos = numpy.array([-2, 0])
+                #    self.button.rotation_pos = numpy.array([-2, 0])
 
-                Engine.SpriteSystem.Sprite.Sprite(self.world_space, self.slepa, np.array([i * 60, j * 60]))
+                Engine.SpriteSystem.Sprite.Sprite(self.world_space, self.slepa, np.array([i * 30, j * 30]))
 
     def uu(self):
         self.rect1.color = 'blue'
@@ -214,7 +218,7 @@ class MainScene(Engine.GameScene.GameScene):
     def u3(self):
         self.button.angle += 10
 
-    def on_update(self, args):
+    def on_update(self, args, event_id):
         # print(self.camera.camera_setting.tolist())
         # if "tick_length" in args:
         #     print(1000 / args["tick_length"])
@@ -240,7 +244,6 @@ class SecondScene(Engine.GameScene.GameScene):
         self.player.add_border("green")
         self.player.set_filling('red')
 
-        self.an = Animation(self.application.load_image("_Idle.png", None), 10, 4, "default1")
         self.an2 = Animation(self.application.load_image("_Attack.png"), 4, 12, "attack")
         self.an4 = Animation(self.application.load_image("_AttackComboNoMovement.png"), 10, 12, "d")
         self.an3 = Animation(self.application.load_image("_Run.png"), 10, 12, "run_right")
@@ -308,11 +311,64 @@ class SecondScene(Engine.GameScene.GameScene):
     #     return visual_point
 
 
+class TestScene(Engine.GameScene.GameScene):
+    def __init__(self, application, width, height):
+        super().__init__(application, width, height)
+        # self.s1 = CoordsSystem(self, 0, np.array([100, 100]))
+        # self.s1.angle = 0
+        # self.s2 = CoordsSystem(self.s1, 0, np.array([100, 100]))
+        # self.shape = Engine.BasiсObjects.Polygon(self.world_space)
+        # self.shape.set_geometry(0, 0, 400, 400)
+        # self.shape.points = numpy.array([[-200, -200], [-100, -400], [400, - 300], [500, 600], [200, 700]], float)
+        # self.circle = Engine.BasiсObjects.Circle(self.world_space, np.array([[-200, -200], [50, -200]], float))
+        # self.shape.set_geometry(100, 100, 200, 200)
+        # self.screen_space.set_visible_off()
+        # self.world_space.set_visible_off()
+        # self.screen_space.set_visible_off()
+        self.camera = Camera(self.screen_space, 0, target=self.world_space)
+        # self.world_space.angle = 40
+        self.world_space.set_visible_off()
+        self.camera.camera_angle = 0
+        for i in range(40):
+            for j in range(40):
+                tile1 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([i * 80, j * 80]))
+                shape = Engine.BasiсObjects.Polygon(tile1)
+                shape.set_geometry(30, 30, 20, 20)
+
+        # self.tile1 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([0, 0]))
+        # self.tile2 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([200, 0]))
+        # self.tile3 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([200, 200]))
+        # self.tile4 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([0, 200]))
+        # self.camera.render_transfer_vector = numpy.array([100, 100], float)
+
+    def on_update(self, event_list, event_id):
+        for event in event_list:
+            if event[0] == cs.E_TICK_LENGTH:
+                print(1000 / event[1])
+        # self.s1.angle += 0.01
+        # self.s2.angle -= 1
+        # self.angle += 1
+        # x = self.screen_space.angle
+        # print(self.screen_space.position, np.array([math.sin(x), math.cos(x)], float))
+        # self.screen_space.position += np.array([math.sin(x / 10) * 10, math.cos(x / 10) * 10], float)
+        # for event in event_list:
+        #     if event[0] == cs.E_EVENT and event[1].type == pygame.MOUSEMOTION:
+        #         x = event[1].pos[0] - self.screen_space.position.tolist()[0]
+        #         y = event[1].pos[1] - self.screen_space.position.tolist()[1]
+        #         self.screen_space.angle = -math.degrees(math.atan2(y, x))
+        # # self.shape.move(numpy.array([-self.screen_space.angle * 0.1, 0], float))
+        # # self.screen_space.angle += 1
+        # self.screen_space.render_scale = 0.1
+        # self.screen_space.render_transfer_vector = numpy.array([-500, 100])
+        # self.screen_space.angle = 10
+        pass
+
+
 if __name__ == '__main__':
-    game = Engine.GameClass.Game((1366, 765), 100, '2', __file__)
-    game.register_scene(SecondScene, '1')
-    game.register_scene(Menu, 'menu')
-    game.register_scene(MainScene, '2')
+    game = Engine.GameClass.Game((1366, 765), 100, '1', __file__)
+    game.register_scene(TestScene, '1')
+    # game.register_scene(Menu, 'menu')
+    # game.register_scene(MainScene, '2')
     game.register_font('Arial', 40, 'arial_40')
     game.set_property(cs.P_SCALING_TYPE, cs.P_SCALING_TYPE_PYGAME)
     game.start()

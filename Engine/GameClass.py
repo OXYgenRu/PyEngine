@@ -9,6 +9,7 @@ import pygame
 import Engine
 import Engine.constants as cs
 from Engine.Colliders.UICollider import UIColliderSystem
+from Engine.RenderSystem.RenderInput import RenderInput
 
 
 class Game:
@@ -29,6 +30,8 @@ class Game:
         self.fonts_for_registration = []
         self.init_properties()
         self.timers = defaultdict(bool)
+        self.event_id = 0
+        self.render_input = RenderInput()
         print(self.game_folder)
 
         self.ui_collider_system: UIColliderSystem = UIColliderSystem(self)
@@ -50,8 +53,9 @@ class Game:
         self.load_fonts()
         self.set_new_scene(self.start_scene_id)
         self.screen.fill((0, 0, 0))
+        events = []
         while running:
-            events = []
+            events.clear()
             tick_length = self.clock.tick(self.fps)
             self.screen.fill((0, 0, 0))
             events.append((cs.E_PRESSED_BUTTONS, pygame.key.get_pressed()))
@@ -59,13 +63,14 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                self.ui_collider_system.update(event)
+                # self.ui_collider_system.update(event)
                 events.append((cs.E_EVENT, event))
             events.append((cs.E_CLOSING_EVENT, cs.E_CLOSING_EVENT))
-            self.scene.update(events)
-            self.ui_collider_system.update_colliders()
-            self.scene.render()
-            self.screen.blit(self.scene, (0, 0))
+            self.scene.update(events, self.event_id)
+            # self.ui_collider_system.update_colliders()
+            self.scene.render(self.screen, numpy.array([0, 0], float), 0)
+            # self.screen.blit(self.scene, (0, 0))
+            self.event_id = 1 - self.event_id
             pygame.display.flip()
         pygame.quit()
 
@@ -82,7 +87,8 @@ class Game:
         self.fonts_for_registration.append((font_name, font_size, font_id))
 
     def set_new_scene(self, scene_id):
-        self.scene = self.scene_storage[scene_id](self.size[0], self.size[1], self)
+        # print(self.size)
+        self.scene = self.scene_storage[scene_id](self, self.size[0], self.size[1])
         self.loaded_scene_storage[scene_id] = self.scene
 
     def load_scene(self, scene_id):

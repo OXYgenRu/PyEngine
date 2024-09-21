@@ -43,7 +43,6 @@ def scale_image(application, pygame_image, new_size: numpy.array = None, scale=N
                                                           'RGBA')
             return pygame_image_scaled
         else:
-            # print(1)
             scaled_image = pygame.transform.scale(pygame_image, new_size)
             return scaled_image
 
@@ -60,7 +59,6 @@ def surface_convertor(point, surface, matrix: numpy.array = None, application=No
         new_polygon = polygon_converter(polygon, matrix)
         new_size = new_polygon[2] - new_polygon[0]
         return True, new_polygon[0], scale_image(application, surface, new_size, None)
-
     else:
         return True, point, surface
 
@@ -111,4 +109,4 @@ def polygon_converter(points, matrix=None) -> numpy.array:
     else:
         return points
 
-# def rotate_render_surface(point,render_surface, angle):
+# def rotate_render_surface(point,coords_system, angle):

@@ -13,7 +13,7 @@ class StateMachine:
     def add_state(self, new_state: Engine.StateMachine.State.State):
         self.states[new_state.state_id] = new_state
         self.states[new_state.state_id].state_machine = self
-        self.states[new_state.state_id].render_surface = self.render_surface
+        self.states[new_state.state_id].coords_system = self.render_surface
 
     def load_state(self, state_id):
         self.state = self.states[state_id]

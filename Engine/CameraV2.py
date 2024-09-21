@@ -55,7 +55,6 @@ class Camera(Engine.RenderSurface.RenderSurface):
         for shape in self.connected_surface.content:
             shape.render(numpy.array(matrix), self)
         surfaces_to_bake_list = []
-        cnt = 0
         for surface_priority in self.connected_surface.surfaces_priorities:
             for surface in self.connected_surface.surfaces[surface_priority]:
                 if self.inter(surface.transfer_vector, surface):
@@ -72,7 +71,7 @@ class Camera(Engine.RenderSurface.RenderSurface):
         # print(cnt)
         self.blits(surfaces_to_bake_list)
 
-    def on_update(self, events_list):
+    def on_update(self, events_list, event_id):
         self.camera_motion(events_list)
 
     def camera_motion(self, events_list):

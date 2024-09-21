@@ -15,10 +15,16 @@ class SpriteSource:
         self.image = self.animator.get_current_frame()
         self.rendered_image = self.animator.get_current_frame()
         self.matrix = None
-        self.image_to_update = True
+        self.image_to_update = False
+        self.event_id = -1
 
-    def update(self, event_list):
-        self.animator.update(event_list)
+    def update(self, event_list, event_id):
+        # print(2)
+        if event_id == self.event_id:
+            return
+        self.event_id = event_id
+        self.animator.update(event_list, event_id)
+        self.image_to_update = False
         for event in event_list:
             if event[0] == cs.E_EVENT:
                 if pygame.USEREVENT + self.animator.event_number == event[1].type:
@@ -27,9 +33,9 @@ class SpriteSource:
                 if cs.E_START_NEW_ANIMATION == event[1].type:
                     self.image = self.animator.get_frame()
                     self.image_to_update = True
-        self.image_to_update = True
 
     def update_image(self, matrix: numpy.array):
+
         if self.matrix is None or matrix is None:
             self.matrix = matrix
             new_surface = surface_convertor(numpy.array([0, 0]), self.image, matrix, self.application)
@@ -74,11 +80,11 @@ class Sprite(pygame.sprite.Sprite):
     def resize(self, size: numpy.array = None, scale=None):
         self.sprite_source.resize(size, scale)
 
-    def update(self, event_list):
-        self.sprite_source.update(event_list)
-        self.on_update(event_list)
+    def update(self, event_list, event_id):
+        self.sprite_source.update(event_list, event_id)
+        self.on_update(event_list, event_id)
 
-    def on_update(self, args):
+    def on_update(self, args, event_id):
         pass
 
     def update_collision(self):
@@ -87,13 +93,13 @@ class Sprite(pygame.sprite.Sprite):
         self.rect.y = self.point[1] - self.rect.height // 2
 
 # class Sprite(pygame.sprite.Sprite):
-#     def __init__(self, render_surface, image_or_animation, point: numpy.array, size: numpy.array, scale):
+#     def __init__(self, coords_system, image_or_animation, point: numpy.array, size: numpy.array, render_scale):
 #         super().__init__()
 #         self.rect = None
-#         self.render_surface = render_surface
-#         self.application = render_surface.application
-#         self.render_surface.add_content(self)
-#         self.animator = Animator(self.application, image_or_animation, size, scale)
+#         self.coords_system = coords_system
+#         self.application = coords_system.application
+#         self.coords_system.add_content(self)
+#         self.animator = Animator(self.application, image_or_animation, size, render_scale)
 #         self.image = self.animator.get_current_frame()
 #         self.point = point
 #         self.in_sprite_union: bool = False
@@ -105,10 +111,10 @@ class Sprite(pygame.sprite.Sprite):
 #         if custom_surface is not None:
 #             custom_surface.blit(sprite[1], sprite[0].tolist())
 #         else:
-#             self.render_surface.blit(sprite[1], sprite[0].tolist())
+#             self.coords_system.blit(sprite[1], sprite[0].tolist())
 #
-#     def resize(self, size: numpy.array = None, scale=None):
-#         self.animator.resize(size, scale)
+#     def resize(self, size: numpy.array = None, render_scale=None):
+#         self.animator.resize(size, render_scale)
 #         self.image = self.animator.get_current_frame()
 #         self.update_collision()
 #

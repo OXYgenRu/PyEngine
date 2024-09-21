@@ -112,18 +112,18 @@ class RenderSurface(pygame.Surface):
     def enable_ui_colliders(self):
         self.properties.update(cs.P_UI_COLLIDERS, False)
 
-    def update(self, event_list):
+    def update(self, event_list, event_id):
         if self.properties.get(cs.P_UPDATABLE):
             return
 
-        self.on_update(event_list)
+        self.on_update(event_list, event_id)
         for element in self.updating_content:
-            element.update(event_list)
+            element.update(event_list, event_id)
         for surface_priority in self.surfaces_priorities:
             for surface in self.surfaces[surface_priority]:
-                surface.update(event_list)
+                surface.update(event_list, event_id)
 
-    def on_update(self, args):
+    def on_update(self, args, event_id):
         pass
 
     def move(self, transfer_vector: np.array):
