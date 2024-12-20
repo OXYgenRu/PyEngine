@@ -3,6 +3,10 @@ import math
 import numpy
 import numpy as np
 import pygame.draw
+from numba import njit, prange
+
+
+# import numba
 
 
 class RenderInput:
@@ -52,17 +56,37 @@ class RenderInput:
             points[point_index] += self.render_camera_position
         return points
 
+    @staticmethod
+    @njit(cache=True)
+    def test_mesh(points: numpy.array, coords_system_position: numpy.array, angle: float, render_camera_position,
+                  render_scale, render_transfer_vector):
+        radians: float = math.radians(angle)
+        matrix: np.array = numpy.array(
+            [[math.cos(radians), -math.sin(radians)],
+             [math.sin(radians), math.cos(radians)]])
+        for point_index in prange(len(points)):
+            points[point_index] = numpy.dot(points[point_index], matrix)
+            points[point_index] += coords_system_position
+            points[point_index] -= render_camera_position - render_transfer_vector
+            points[point_index] *= render_scale
+            points[point_index] += render_camera_position
+        return points
+
     def draw_polygon(self, surface, points: numpy.array, coords_system_position: numpy.array, angle: float,
                      color: tuple):
         points = points.copy()
-        points = self.restore_mesh(points, coords_system_position, angle)
-        points = self.transform_mesh(points)
+        # points = self.restore_mesh(points, coords_system_position, angle)
+        # points = self.transform_mesh(points)
+        points = self.test_mesh(points, coords_system_position, angle, self.render_camera_position, self.render_scale,
+                                self.render_transfer_vector)
         pygame.draw.polygon(surface, color, points, 0)
 
     def draw_circle(self, surface, points: numpy.array, coords_system_position: numpy.array, angle: float,
                     color: tuple):
         points = points.copy()
         radius: numpy.array = (points[1][0] - points[0][0]) * self.render_scale
-        points = self.restore_mesh(points, coords_system_position, angle)
-        points = self.transform_mesh(points)
+        # points = self.restore_mesh(points, coords_system_position, angle)
+        # points = self.transform_mesh(points)
+        points = self.test_mesh(points, coords_system_position, angle, self.render_camera_position, self.render_scale,
+                                self.render_transfer_vector)
         pygame.draw.circle(surface, color, points[0], radius)

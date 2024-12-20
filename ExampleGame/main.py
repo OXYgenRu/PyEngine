@@ -226,19 +226,18 @@ class MainScene(Engine.GameScene.GameScene):
 
 
 class SecondScene(Engine.GameScene.GameScene):
-    def __init__(self, width, height, application):
+    def __init__(self, application, width, height):
         super().__init__(width=width, height=height, application=application)
-        self.display = Engine.CameraV2.Camera(parent_surface=self, render_priority=0, width=self.width // 2,
-                                              height=self.height,
-                                              transfer_vector=np.array([0, 0]), zoom_restrictions=np.array([2, 0.1]))
-        # self.display = Engine.RenderSurface.RenderSurface(self, 1, self.width, self.height, np.array([-20000, -5000]))
-        # self.display.add_border()
-        self.rect = Engine.BasiсObjects.Polygon(self.display, [], 'green', width=10)
+        self.camera = Camera(self.screen_space, 0, target=self.world_space)
+        # self.world_space.angle = 40
+        self.world_space.set_visible_off()
+        # self.world_space = Engine.RenderSurface.RenderSurface(self, 1, self.width, self.height, np.array([-20000, -5000]))
+        # self.world_space.add_border()
+        self.rect = Engine.BasiсObjects.Polygon(self.world_space, [], 'green', width=10)
         self.rect.set_geometry(0, 100, 100, 100)
-        # self.display.test = 1
-        self.display.set_filling('yellow')
+        # self.world_space.test = 1
         self.state_machine = Engine.StateMachine.StateMachine.StateMachine(self)
-        self.player = Engine.RenderSurface.RenderSurface(self.display, 10, 200, 200,
+        self.player = Engine.RenderSurface.RenderSurface(self.world_space, 10, 200, 200,
                                                          [self.width // 2 - 100, self.height // 2 - 100])
         # self.player
         self.player.add_border("green")
@@ -249,7 +248,7 @@ class SecondScene(Engine.GameScene.GameScene):
         self.an3 = Animation(self.application.load_image("_Run.png"), 10, 12, "run_right")
         self.sp1 = Engine.SpriteSystem.SingleSprites.SingleSprite(None,
                                                                   np.array([200 // 2, 200 // 2]),
-                                                                  np.array([None, None]), 1, )
+                                                                  np.array([None, None]), 1 )
 
         self.sp1.animator.add_animation(self.an2)
         self.sp1.animator.add_animation(self.an)
@@ -263,20 +262,12 @@ class SecondScene(Engine.GameScene.GameScene):
         self.state_machine.add_state(AttackLeftState("attack_left"))
         self.state_machine.add_state(DefaultLeft("default_left"))
         self.state_machine.load_state("default_right")
-        self.display.add_border()
+        self.world_space.add_border()
 
-        self.display2 = Engine.CameraV2.Camera(parent_surface=self, render_priority=0, width=self.width // 2,
-                                               height=self.height,
-                                               transfer_vector=np.array([self.width // 2, 0]),
-                                               zoom_restrictions=np.array([20, 0.01]))
-        self.display2.set_filling('green')
-        self.rect1 = Engine.BasiсObjects.Polygon(self.display2, color='blue', width=3)
-        self.rect1.set_geometry(200, 200, 10, 500)
-        self.circle = Engine.BasiсObjects.Circle(self.display2, [[600, 600], [800, 600]], width=10)
-        # self.display.fill_color = 'green'
+        # self.world_space.fill_color = 'green'
 
         # self.camera1.camera_setting = numpy.array([0, 0, 1,1])
-        # self.rect = Engine.BasiсObjects.Polygon(self.display, [], color='green')
+        # self.rect = Engine.BasiсObjects.Polygon(self.world_space, [], color='green')
         # self.rect.set_geometry(0, self.height // 2 + self.sp1.rect.y // 4, self.width, self.height)
         # self.camera1.camera_setting[2] = 1
         # self.camera1.add_border('red')
@@ -288,7 +279,7 @@ class SecondScene(Engine.GameScene.GameScene):
         if "tick_length" in args:
             print(1000 / args["tick_length"])
         # pass
-        # print(self.display.camera_setting, self.display2.camera_setting)
+        # print(self.world_space.camera_setting, self.world_space2.camera_setting)
         # if cs.E_EVENT in args:
         #     event = args[cs.E_EVENT]
         #     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -298,7 +289,7 @@ class SecondScene(Engine.GameScene.GameScene):
         # self.camera1.camera_motion(event)
         # print(self.camera1.camera_setting[2])
 
-    # def point_calculations_displayed_coords(point, camera_object):
+    # def point_calculations_world_spaceed_coords(point, camera_object):
     #     x = WIDTH // 2 - (camera_object.camera_pos[0] + point.p_x + camera_object.moving_vector[0])
     #     x *= camera_object.camera_zoom
     #     x = WIDTH // 2 - x
@@ -314,32 +305,7 @@ class SecondScene(Engine.GameScene.GameScene):
 class TestScene(Engine.GameScene.GameScene):
     def __init__(self, application, width, height):
         super().__init__(application, width, height)
-        # self.s1 = CoordsSystem(self, 0, np.array([100, 100]))
-        # self.s1.angle = 0
-        # self.s2 = CoordsSystem(self.s1, 0, np.array([100, 100]))
-        # self.shape = Engine.BasiсObjects.Polygon(self.world_space)
-        # self.shape.set_geometry(0, 0, 400, 400)
-        # self.shape.points = numpy.array([[-200, -200], [-100, -400], [400, - 300], [500, 600], [200, 700]], float)
-        # self.circle = Engine.BasiсObjects.Circle(self.world_space, np.array([[-200, -200], [50, -200]], float))
-        # self.shape.set_geometry(100, 100, 200, 200)
-        # self.screen_space.set_visible_off()
-        # self.world_space.set_visible_off()
-        # self.screen_space.set_visible_off()
-        self.camera = Camera(self.screen_space, 0, target=self.world_space)
-        # self.world_space.angle = 40
-        self.world_space.set_visible_off()
-        self.camera.camera_angle = 0
-        for i in range(40):
-            for j in range(40):
-                tile1 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([i * 80, j * 80]))
-                shape = Engine.BasiсObjects.Polygon(tile1)
-                shape.set_geometry(30, 30, 20, 20)
 
-        # self.tile1 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([0, 0]))
-        # self.tile2 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([200, 0]))
-        # self.tile3 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([200, 200]))
-        # self.tile4 = Engine.CoordsSystem.CoordsSystem(self.world_space, 0, np.array([0, 200]))
-        # self.camera.render_transfer_vector = numpy.array([100, 100], float)
 
     def on_update(self, event_list, event_id):
         for event in event_list:
@@ -348,6 +314,7 @@ class TestScene(Engine.GameScene.GameScene):
         # self.s1.angle += 0.01
         # self.s2.angle -= 1
         # self.angle += 1
+        self.camera.camera_angle += 1
         # x = self.screen_space.angle
         # print(self.screen_space.position, np.array([math.sin(x), math.cos(x)], float))
         # self.screen_space.position += np.array([math.sin(x / 10) * 10, math.cos(x / 10) * 10], float)
